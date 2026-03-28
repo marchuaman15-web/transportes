@@ -2935,6 +2935,7 @@
         + '<th style="padding:8px 10px;text-align:left;color:var(--mut);border-bottom:1px solid var(--bdr2);">Tipo</th>'
         + '<th style="padding:8px 10px;text-align:left;color:var(--mut);border-bottom:1px solid var(--bdr2);">Estado</th>'
         + '<th style="padding:8px 10px;text-align:left;color:var(--mut);border-bottom:1px solid var(--bdr2);">Sistema</th>'
+        + '<th style="padding:8px 10px;text-align:center;color:var(--mut);border-bottom:1px solid var(--bdr2);">Acciones</th>'
         + '</tr></thead><tbody>'
         + ots.map(function (o, i) {
           const eColor = eC[(o.estado || '').toUpperCase()] || '#9CA3AF';
@@ -2946,6 +2947,10 @@
             + '<td style="padding:7px 10px;"><span class="badge badge-' + (o.tipoOT || o.tipo || '').toLowerCase() + '">' + (o.tipoOT || o.tipo || '—') + '</span></td>'
             + '<td style="padding:7px 10px;"><span style="font-size:0.68rem;padding:2px 8px;border-radius:4px;background:' + eColor + '20;color:' + eColor + ';border:1px solid ' + eColor + '40;font-weight:600;">' + (o.estado || '—') + '</span></td>'
             + '<td style="padding:7px 10px;color:var(--mut);font-size:0.72rem;">' + (o.sistema || '—') + '</td>'
+            + '<td style="padding:7px 10px;text-align:center;"><div style="display:flex;gap:4px;justify-content:center;">'
+            + '<button onclick="abrirForm(window._todasLasOT?.find(x => x.id === \'' + o.id + '\') || {id:\'' + o.id + '\'})" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:#60A5FA;border-radius:5px;padding:5px 8px;font-size:0.7rem;cursor:pointer;">👁️</button>'
+
+            + '</div></td>'
             + '</tr>';
         }).join('')
         + '</tbody></table></div></div>';
@@ -3670,11 +3675,22 @@
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-top:0.5rem;">
-        <button class="btn-secondary" onclick="cerrarOv(\'ov-form\')">← Cancelar</button>
-        <button class="btn-primary" onclick="guardarOT()">${ot ? '💾 Actualizar OT' : '✅ Guardar OT'}</button>
+      ${ot ? `
+      <div class="card">
+        <div class="card-title">✍️ Firmas y Acciones</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          ${typeof generarBotonFirma === 'function' ? generarBotonFirma(ot.id, 'mecanico', !!ot.firma_mecanico) : ''}
+          ${typeof generarBotonFirma === 'function' ? generarBotonFirma(ot.id, 'supervisor', !!ot.firma_supervisor) : ''}
+        </div>
+        ${S.rol === 'admin' || S.rol === 'supervisor' ? `<button onclick="ECOSEM_PRINT_V2('${ot.id}')" style="width:100%;margin-bottom:4px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34D399;border-radius:10px;padding:12px;font-weight:700;font-size:0.85rem;cursor:pointer;">🖨️ Imprimir OT con Firmas</button>` : ''}
+      </div>` : ''}
+
+      <div style="display:grid;grid-template-columns:${(!ot || S.rol === 'admin') ? '1fr 1fr' : '1fr'};gap:0.8rem;margin-top:0.5rem;">
+        <button class="btn-secondary" onclick="cerrarOv(\'ov-form\')">← Volver</button>
+        ${(!ot || S.rol === 'admin') ? `<button class="btn-primary" onclick="guardarOT()">${ot ? '💾 Actualizar OT' : '✅ Guardar OT'}</button>` : ''}
       </div>
-      <button onclick="printOTBlanco()" style="width:100%;margin-top:8px;background:var(--gold);color:#000;border:none;border-radius:10px;padding:12px;font-family:\'Barlow Condensed\',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;letter-spacing:1px;">🖨️ Imprimir Formato en Blanco</button>
+      ${S.rol === 'admin' || S.rol === 'supervisor' ? `<button onclick="printOTBlanco()" style="width:100%;margin-top:8px;background:var(--gold);color:#000;border:none;border-radius:10px;padding:12px;font-family:\'Barlow Condensed\',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;letter-spacing:1px;">🖨️ Imprimir Formato en Blanco</button>` : ''}
+
     </div>
 
   </div>`;
@@ -3852,13 +3868,45 @@
     const sis = ($('f-sis') ? $('f-sis').value : '');
     const av = ($('f-averia') ? $('f-averia').value : '') || ($('f-av') ? $('f-av').value.trim() : '');
     const mecs = (_mecsList && _mecsList.length) ? _mecsList : _mecs.filter(m => m.trim());
-    if (!tipo) { toast('Selecciona el Tipo de OT', '#FF6B6B'); switchTab('equipo'); return; }
-    if (!mecs.length) { toast('Agrega al menos un mecánico', '#FF6B6B'); switchTab('equipo'); return; }
-    const now = new Date();
-    const codigo = `OT-${tipo}-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
     const get = (id, def = '') => { const e = $(id); return e ? e.value : def; };
+    
+    // ══════════════════════════════════════════════════════════
+    // VALIDACIONES OBLIGATORIAS - PANEL MECÁNICOS
+    // ══════════════════════════════════════════════════════════
+    
+    // TAB EQUIPO - TODOS LOS CAMPOS OBLIGATORIOS
+    if (!tipo) { toast('⚠️ Campo OBLIGATORIO: Tipo de OT', '#FF6B6B'); switchTab('equipo'); return; }
+    if (tipo === 'MP' && !get('f-smp')) { toast('⚠️ Campo OBLIGATORIO: Subtipo de MP', '#FF6B6B'); switchTab('equipo'); return; }
+    if (!linea) { toast('⚠️ Campo OBLIGATORIO: Línea', '#FF6B6B'); switchTab('equipo'); return; }
+    if (!equipo) { toast('⚠️ Campo OBLIGATORIO: Equipo', '#FF6B6B'); switchTab('equipo'); return; }
+    if (!get('f-unidad').trim()) { toast('⚠️ Campo OBLIGATORIO: Unidad', '#FF6B6B'); switchTab('equipo'); return; }
+    if (!get('f-placa').trim()) { toast('⚠️ Campo OBLIGATORIO: Placa', '#FF6B6B'); switchTab('equipo'); return; }
+    if (!get('f-km') || get('f-km') === '0') { toast('⚠️ Campo OBLIGATORIO: Kilometraje', '#FF6B6B'); switchTab('equipo'); return; }
+    if (!get('f-hrs') || get('f-hrs') === '0') { toast('⚠️ Campo OBLIGATORIO: Horas', '#FF6B6B'); switchTab('equipo'); return; }
+    if (!get('f-operador').trim()) { toast('⚠️ Campo OBLIGATORIO: Operador', '#FF6B6B'); switchTab('equipo'); return; }
+    if (!mecs.length) { toast('⚠️ Campo OBLIGATORIO: Agrega al menos un mecánico', '#FF6B6B'); switchTab('equipo'); return; }
+
+    // TAB ACTIVIDAD - TODOS LOS CAMPOS OBLIGATORIOS
+    if (!sis) { toast('⚠️ Campo OBLIGATORIO: Sistema Afectado', '#FF6B6B'); switchTab('actividad'); return; }
+    if (!get('f-componente')) { toast('⚠️ Campo OBLIGATORIO: Componente', '#FF6B6B'); switchTab('actividad'); return; }
+    if (!av) { toast('⚠️ Campo OBLIGATORIO: Avería', '#FF6B6B'); switchTab('actividad'); return; }
+    if (!get('f-causa')) { toast('⚠️ Campo OBLIGATORIO: Causa', '#FF6B6B'); switchTab('actividad'); return; }
+    if (!get('f-objeto').trim()) { toast('⚠️ Campo OBLIGATORIO: Objeto/Descripción', '#FF6B6B'); switchTab('actividad'); return; }
+    if (!get('f-fecha')) { toast('⚠️ Campo OBLIGATORIO: Fecha de Registro', '#FF6B6B'); switchTab('actividad'); return; }
+    if (!get('f-parada')) { toast('⚠️ Campo OBLIGATORIO: Parada', '#FF6B6B'); switchTab('actividad'); return; }
+    if (!get('f-fi')) { toast('⚠️ Campo OBLIGATORIO: Fecha Inicio', '#FF6B6B'); switchTab('actividad'); return; }
+    if (!get('f-hi')) { toast('⚠️ Campo OBLIGATORIO: Hora Inicio', '#FF6B6B'); switchTab('actividad'); return; }
+    if (!get('f-ff')) { toast('⚠️ Campo OBLIGATORIO: Fecha Fin', '#FF6B6B'); switchTab('actividad'); return; }
+    if (!get('f-hf')) { toast('⚠️ Campo OBLIGATORIO: Hora Fin', '#FF6B6B'); switchTab('actividad'); return; }
+
+    // TAB TRABAJOS - TODOS LOS CAMPOS OBLIGATORIOS
+    const tieneTrabajo = (window._trabajos || []).some(t => t.desc && t.desc.trim());
+    if (!tieneTrabajo) { toast('⚠️ Campo OBLIGATORIO: Ingresa al menos un trabajo realizado', '#FF6B6B'); switchTab('trabajos'); return; }
+    if (!get('f-obs').trim()) { toast('⚠️ Campo OBLIGATORIO: Observaciones', '#FF6B6B'); switchTab('trabajos'); return; }
+    if (!get('f-est')) { toast('⚠️ Campo OBLIGATORIO: Estado', '#FF6B6B'); switchTab('trabajos'); return; }
+    
+    const now = new Date();
     const datos = {
-      codigo: _editId ? (window._hisOTs || []).find(o => o.id === _editId)?.codigo || codigo : codigo,
       tipoOT: tipo, subtipoMP: get('f-smp'), linea, equipo,
       unidad: get('f-unidad'), placa: get('f-placa'),
       km: get('f-km', '0'), horas: get('f-hrs', '0'),
@@ -3873,14 +3921,43 @@
       observaciones: get('f-obs'),
       registradoPor: S.nombre, registradoEn: now.toISOString(),
     };
-    showL(_editId ? 'Actualizando...' : 'Guardando OT...');
-    let ok;
-    if (_editId) {
-      ok = await db.collection('ordenes_trabajo').doc(_editId).update(datos).then(() => true).catch(() => false);
-    } else {
-      const r = await db.collection('ordenes_trabajo').add({ ...datos, creadoEn: firebase.firestore.FieldValue.serverTimestamp() }).catch(() => null);
-      ok = !!r;
+
+    showL(_editId ? 'Actualizando...' : 'Generando OT...');
+    let ok = false;
+    
+    try {
+      if (_editId) {
+        // Encontrar codigo de OT existente para no sobreescribirlo accidentalmente vacío
+        const codigoExistente = (window._hisOTs || []).find(o => o.id === _editId)?.codigo || 
+                                (window._todasLasOT || []).find(o => o.id === _editId)?.codigo;
+        if (codigoExistente) datos.codigo = codigoExistente;
+        
+        await db.collection('ordenes_trabajo').doc(_editId).update(datos);
+        ok = true;
+      } else {
+        const refConfig = db.collection('config').doc('correlativo');
+        
+        await db.runTransaction(async (t) => {
+          const doc = await t.get(refConfig);
+          let nextId = 1;
+          if (doc.exists) {
+            nextId = (doc.data().ot || 0) + 1;
+          }
+          t.set(refConfig, { ot: nextId }, { merge: true });
+          
+          const nuevoCodigo = `OT-${now.getFullYear()}-${nextId}`;
+          
+          datos.codigo = nuevoCodigo;
+          const newDocRef = db.collection('ordenes_trabajo').doc();
+          t.set(newDocRef, { ...datos, creadoEn: firebase.firestore.FieldValue.serverTimestamp() });
+        });
+        ok = true;
+      }
+    } catch(err) {
+      console.error("Error guardarOT transaccion", err);
+      ok = false;
     }
+
     hideL();
     if (ok) { toast(_editId ? '✅ OT actualizada' : '✅ OT registrada'); cerrarOv('ov-form'); if (S.rol === 'mecanico') cargarMisOTs(); if ($('ov-historial').classList.contains('show')) abrirHistorial(); }
     else toast('❌ Error al guardar. Verifica la conexión.', '#FF6B6B');
@@ -4057,7 +4134,7 @@
         + '<td style="padding:8px 10px;color:var(--mut);font-size:0.72rem;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + mecLabel + '">' + mecLabel + '</td>'
         + '<td style="padding:8px 10px;"><div style="display:flex;gap:4px;justify-content:center;">'
         + '<button data-id="' + oid + '" onclick="verOT(this.dataset.id)" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:#60A5FA;border-radius:5px;padding:5px 8px;font-size:0.7rem;cursor:pointer;">👁 Ver</button>'
-        + '<button data-print-id="' + oid + '" class="btn-print-ot" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34D399;border-radius:5px;padding:5px 8px;font-size:0.7rem;cursor:pointer;">🖨️</button>'
+        + (esAdmin ? '<button data-print-id="' + oid + '" class="btn-print-ot" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34D399;border-radius:5px;padding:5px 8px;font-size:0.7rem;cursor:pointer;">🖨️</button>' : '')
         + (esAdmin ? '<button data-id="' + oid + '" onclick="editarOT(this.dataset.id)" style="background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);color:#F5A623;border-radius:5px;padding:5px 8px;font-size:0.7rem;cursor:pointer;">✏️</button>' : '')
         + (esAdmin ? '<button data-id="' + oid + '" onclick="eliminarOT(this.dataset.id)" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#EF4444;border-radius:5px;padding:5px 8px;font-size:0.7rem;cursor:pointer;">🗑</button>' : '')
         + '</div></td></tr>';
@@ -5353,8 +5430,8 @@
           <button onclick="cerrarFirmaDigital()" style="background:transparent;border:none;color:var(--mut);font-size:1.5rem;cursor:pointer;">✕</button>
         </div>
         <div style="text-align:center;color:var(--mut);margin-bottom:15px;font-size:0.9rem;">Dibuja tu firma con el dedo o mouse</div>
-        <div style="background:#fff;border-radius:8px;overflow:hidden;border:2px solid var(--cyan);margin-bottom:15px;">
-          <canvas id="canvas-firma" width="552" height="200" style="display:block;cursor:crosshair;touch-action:none;"></canvas>
+        <div style="background:#fff;border-radius:8px;overflow:hidden;border:2px solid var(--cyan);margin-bottom:15px;width:100%;">
+          <canvas id="canvas-firma" width="552" height="200" style="display:block;cursor:crosshair;touch-action:none;width:100%;max-width:100%;object-fit:contain;"></canvas>
         </div>
         <div style="color:var(--mut);font-size:0.85rem;margin-bottom:15px;text-align:center;">
           Nombre: <strong style="color:var(--cyan);">${S.nombre || 'Usuario'}</strong>
@@ -5393,14 +5470,18 @@
   function iniciarFirma(e) {
     firmando = true;
     const rect = canvasFirma.getBoundingClientRect();
+    const scaleX = canvasFirma.width / rect.width;
+    const scaleY = canvasFirma.height / rect.height;
     ctxFirma.beginPath();
-    ctxFirma.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctxFirma.moveTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
   }
 
   function dibujarFirma(e) {
     if (!firmando) return;
     const rect = canvasFirma.getBoundingClientRect();
-    ctxFirma.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    const scaleX = canvasFirma.width / rect.width;
+    const scaleY = canvasFirma.height / rect.height;
+    ctxFirma.lineTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
     ctxFirma.stroke();
   }
 
@@ -6582,3 +6663,120 @@
   }
 
   console.log('✅ Sistema de exportación Dashboard Excel cargado');
+
+  // ══════════════════════════════════════════════════════════════════════
+  // VERIFICACIÓN DE CARGA DE SCRIPTS Y MÓDULOS EXTERNOS
+  // ══════════════════════════════════════════════════════════════════════
+  
+  setTimeout(function() {
+    console.log('');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('📋 ECOSEM V.7 — REPORTE DE VERIFICACIÓN DE SISTEMA');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('');
+    
+    let todoCargado = true;
+    
+    // 1. Firebase
+    if (typeof firebase !== 'undefined' && window._firebaseOK) {
+      console.log('✅ Firebase cargado correctamente');
+      console.log('   → Firestore: ' + (typeof db !== 'undefined' ? 'ACTIVO' : 'ERROR'));
+      console.log('   → Auth: ' + (typeof auth !== 'undefined' ? 'ACTIVO' : 'ERROR'));
+    } else {
+      console.error('❌ Firebase NO cargado o con errores');
+      todoCargado = false;
+    }
+    
+    // 2. XLSX (Excel)
+    if (typeof XLSX !== 'undefined') {
+      console.log('✅ XLSX (Excel) cargado correctamente');
+    } else {
+      console.error('❌ XLSX (Excel) NO cargado');
+      todoCargado = false;
+    }
+    
+    // 3. Autenticación ECOSEM
+    if (typeof USUARIOS_ECOSEM !== 'undefined') {
+      console.log('✅ Sistema de autenticación cargado (' + Object.keys(USUARIOS_ECOSEM).length + ' usuarios)');
+    } else {
+      console.error('❌ Sistema de autenticación NO cargado');
+      todoCargado = false;
+    }
+    
+    // 4. Verificar funciones críticas
+    const funcionesCriticas = [
+      'guardarOT',
+      'abrirForm',
+      'cargarMisOTs',
+      'abrirHistorial',
+      'ECOSEM_PRINT_V2',
+      'printOTBlanco',
+      'exportarDashboardExcel'
+    ];
+    
+    let funcionesOK = 0;
+    let funcionesError = [];
+    
+    funcionesCriticas.forEach(function(fn) {
+      if (typeof window[fn] === 'function') {
+        funcionesOK++;
+      } else {
+        funcionesError.push(fn);
+      }
+    });
+    
+    if (funcionesError.length === 0) {
+      console.log('✅ Todas las funciones críticas cargadas (' + funcionesOK + '/' + funcionesCriticas.length + ')');
+    } else {
+      console.error('❌ Funciones faltantes: ' + funcionesError.join(', '));
+      todoCargado = false;
+    }
+    
+    // 5. Verificar elementos del DOM
+    const elementosCriticos = [
+      'login-screen',
+      'app-main',
+      'ov-form',
+      'ov-historial',
+      'ov-dashboard'
+    ];
+    
+    let elementosOK = 0;
+    let elementosError = [];
+    
+    elementosCriticos.forEach(function(id) {
+      if (document.getElementById(id)) {
+        elementosOK++;
+      } else {
+        elementosError.push(id);
+      }
+    });
+    
+    if (elementosError.length === 0) {
+      console.log('✅ Todos los elementos del DOM presentes (' + elementosOK + '/' + elementosCriticos.length + ')');
+    } else {
+      console.warn('⚠️  Elementos faltantes del DOM: ' + elementosError.join(', '));
+    }
+    
+    // 6. Service Worker
+    if ('serviceWorker' in navigator) {
+      console.log('✅ Service Worker compatible');
+    } else {
+      console.warn('⚠️  Service Worker no compatible en este navegador');
+    }
+    
+    console.log('');
+    console.log('═══════════════════════════════════════════════════════════════');
+    if (todoCargado) {
+      console.log('✅ SISTEMA ECOSEM V.7 COMPLETAMENTE CARGADO');
+    } else {
+      console.error('❌ SISTEMA CON ERRORES - Revisar logs arriba');
+    }
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('');
+    
+    // Mostrar toast visual si hay errores
+    if (!todoCargado && typeof toast === 'function') {
+      toast('⚠️ Sistema cargado con errores. Revisar consola (F12)', '#FF3B30');
+    }
+  }, 2000); // Esperar 2 segundos para que todo se cargue
