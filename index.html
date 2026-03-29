@@ -3490,7 +3490,7 @@
       'FRENOS': ['Bloqueo de ruedas', 'Cristalización de fricciones', 'Presencia de aceite en líneas de aire', 'Pedal esponjoso/largo'],
       'SUSPENSIÓN': ['Equipo inclinado', 'Pérdida de nitrógeno/aceite', 'Hojas de muelle fracturadas', 'Soportes (pernos) sueltos o rotos'],
       'ELÉCTRICO': ['Sulfatación', 'Falta de carga', 'Cortocircuito en arnés', 'Lecturas erróneas en panel (check engine)', 'Luces inoperativas'],
-      'NEUMÁTICO': ['Agua en el sistema', 'Carga lenta de tanques', 'Fugas audibles en válvulas relé', 'Diafragmas de pulmón rotos'],
+      'NEUMÁTICO': ['Agua en el sistema', 'Carga lenta de tanques', 'Fugas audibles en válvulas relé', 'Diafragmas de pulmón rotos', 'Secador de aire'],
       'ESTRUCTURAL': ['Fisuras en soldadura', 'Deformación por sobrecarga', 'Pernos de anclaje de cabina rotos', 'Corrosión profunda'],
       'TOLVA': ['Desgaste abrasivo de planchas', 'Deformación de compuerta', 'Trabas en el mecanismo de apertura', 'Abolladuras por impacto'],
       'IMPLEMENTOS': ['Juego excesivo en el enganche', 'Falta de cierre de seguridad', 'Desgaste de bocinas', 'Falta de lubricación (engrase)'],
@@ -3768,7 +3768,7 @@
     'FRENOS': ['Bloqueo de ruedas', 'Cristalización de fricciones', 'Presencia de aceite en líneas de aire', 'Pedal esponjoso/largo'],
     'SUSPENSIÓN': ['Equipo inclinado', 'Pérdida de nitrógeno/aceite', 'Hojas de muelle fracturadas', 'Soportes (pernos) sueltos o rotos'],
     'ELÉCTRICO': ['Sulfatación', 'Falta de carga', 'Cortocircuito en arnés', 'Lecturas erróneas en panel (check engine)', 'Luces inoperativas'],
-    'NEUMÁTICO': ['Agua en el sistema', 'Carga lenta de tanques', 'Fugas audibles en válvulas relé', 'Diafragmas de pulmón rotos'],
+    'NEUMÁTICO': ['Agua en el sistema', 'Carga lenta de tanques', 'Fugas audibles en válvulas relé', 'Diafragmas de pulmón rotos', 'Secador de aire'],
     'ESTRUCTURAL': ['Fisuras en soldadura', 'Deformación por sobrecarga', 'Pernos de anclaje de cabina rotos', 'Corrosión profunda'],
     'TOLVA': ['Desgaste abrasivo de planchas', 'Deformación de compuerta', 'Trabas en el mecanismo de apertura', 'Abolladuras por impacto'],
     'IMPLEMENTOS': ['Juego excesivo en el enganche', 'Falta de cierre de seguridad', 'Desgaste de bocinas', 'Falta de lubricación (engrase)'],
@@ -3996,7 +3996,7 @@
         + '<td style="padding:7px 10px;color:var(--mut);font-size:0.72rem;">' + (o.mecanicoPrincipal || o.mecanico || '—') + '</td>'
         + '<td style="padding:7px 10px;color:var(--mut);font-size:0.72rem;">' + (o.sistema || '—') + '</td>'
         + '<td style="padding:7px 10px;text-align:center;">'
-        + '<button data-print-id="' + o.id + '" class="btn-print-ot" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34D399;border-radius:5px;padding:5px 10px;font-size:0.75rem;cursor:pointer;">🖨️ Imprimir</button>'
+        + '<button onclick="ECOSEM_PRINT_V2(\'' + o.id + '\')" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34D399;border-radius:5px;padding:5px 10px;font-size:0.75rem;cursor:pointer;">🖨️ Imprimir</button>'
         + '</td></tr>';
     });
 
@@ -4134,7 +4134,7 @@
         + '<td style="padding:8px 10px;color:var(--mut);font-size:0.72rem;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + mecLabel + '">' + mecLabel + '</td>'
         + '<td style="padding:8px 10px;"><div style="display:flex;gap:4px;justify-content:center;">'
         + '<button data-id="' + oid + '" onclick="verOT(this.dataset.id)" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:#60A5FA;border-radius:5px;padding:5px 8px;font-size:0.7rem;cursor:pointer;">👁 Ver</button>'
-        + (esAdmin ? '<button data-print-id="' + oid + '" class="btn-print-ot" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34D399;border-radius:5px;padding:5px 8px;font-size:0.7rem;cursor:pointer;">🖨️</button>' : '')
+        + (esAdmin ? '<button onclick="ECOSEM_PRINT_V2(\'' + oid + '\')" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34D399;border-radius:5px;padding:5px 8px;font-size:0.7rem;cursor:pointer;">🖨️</button>' : '')
         + (esAdmin ? '<button data-id="' + oid + '" onclick="editarOT(this.dataset.id)" style="background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);color:#F5A623;border-radius:5px;padding:5px 8px;font-size:0.7rem;cursor:pointer;">✏️</button>' : '')
         + (esAdmin ? '<button data-id="' + oid + '" onclick="eliminarOT(this.dataset.id)" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#EF4444;border-radius:5px;padding:5px 8px;font-size:0.7rem;cursor:pointer;">🗑</button>' : '')
         + '</div></td></tr>';
@@ -4927,652 +4927,8 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { }));
   }
-</script>
 
-<!-- Sistema de Autenticación ECOSEM (52 usuarios) -->
-<script>
-  // ECOSEM - Sistema de Autenticación con 52 Usuarios
-  // Credenciales actualizadas según lista oficial
-
-  const USUARIOS_ECOSEM = {
-    // ADMINISTRADORES
-    'admin': { password: 'ecosem2025', rol: 'admin', nombre: 'Administrador 1' },
-    'admin2': { password: 'ecosem2025', rol: 'admin', nombre: 'Administrador 2' },
-
-    // SUPERVISORES
-    'supervisor': { password: 'sup2025', rol: 'supervisor', nombre: 'Supervisor Mantenimiento' },
-    'supervisor2': { password: 'sup2025', rol: 'supervisor', nombre: 'Supervisor 2' },
-
-    // GERENCIA
-    'gerencia': { password: 'ger2025', rol: 'gerencia', nombre: 'Gerencia' },
-
-    // SUPERVISORES DE ÁREA
-    'area1': { password: 'area2025', rol: 'supervisor_area', nombre: 'Supervisor Área 1' },
-    'area2': { password: 'area2025', rol: 'supervisor_area', nombre: 'Supervisor Área 2' },
-
-    // MECÁNICOS (44 en total)
-    'aldair': { password: 'mec2025', rol: 'mecanico', nombre: 'ALDAIR YADMIR FLORES LEYVA' },
-    'alex': { password: 'mec2025', rol: 'mecanico', nombre: 'ALEX SANTIAGO BONILLA' },
-    'alfonso': { password: 'mec2025', rol: 'mecanico', nombre: 'ALFONSO UGARTE JAVIER' },
-    'alvarado': { password: 'mec2025', rol: 'mecanico', nombre: 'ALVARADO SOTO WILLIAM' },
-    'brandon': { password: 'mec2025', rol: 'mecanico', nombre: 'BRANDON ARCE CASIMIRO' },
-    'brayan': { password: 'mec2025', rol: 'mecanico', nombre: 'BRAYAN MARLON CAJACURI ROJAS' },
-    'callupe': { password: 'mec2025', rol: 'mecanico', nombre: 'CALLUPE MATIAS JOSMEL' },
-    'campos': { password: 'mec2025', rol: 'mecanico', nombre: 'CAMPOS ALVARADO JHONATAN FELIX' },
-    'caqui': { password: 'mec2025', rol: 'mecanico', nombre: 'CAQUI TORRES FRAN' },
-    'carhuachin': { password: 'mec2025', rol: 'mecanico', nombre: 'CARHUACHIN CAJACHAGUA FERLANS MANUEL' },
-    'celis': { password: 'mec2025', rol: 'mecanico', nombre: 'CELIS SECADA KEVIN' },
-    'colca': { password: 'mec2025', rol: 'mecanico', nombre: 'COLCA COLLAZOS JHON' },
-    'daniel': { password: 'mec2025', rol: 'mecanico', nombre: 'DANIEL PUENTE SACRAMENTO' },
-    'david': { password: 'mec2025', rol: 'mecanico', nombre: 'DAVID BAUTISTA RIOS' },
-    'estrada': { password: 'mec2025', rol: 'mecanico', nombre: 'ESTRADA MINAYA NILTON' },
-    'flores': { password: 'mec2025', rol: 'mecanico', nombre: 'FLORES MAYTA LUIS RAUL' },
-    'huacho': { password: 'mec2025', rol: 'mecanico', nombre: 'HUACHO TRINIDAD ISAAC LEONARDO' },
-    'huaman': { password: 'mec2025', rol: 'mecanico', nombre: 'HUAMAN CARLOS PABLO' },
-    'huaman2': { password: 'mec2025', rol: 'mecanico', nombre: 'HUAMAN POMA MARCO ANTONIO' },
-    'hugo': { password: 'mec2025', rol: 'mecanico', nombre: 'HUGO ELEAZAR VIVAS POMA' },
-    'jhasler': { password: 'mec2025', rol: 'mecanico', nombre: 'JHASLER KLISMAN PANEZ MAURICIO' },
-    'jhon': { password: 'mec2025', rol: 'mecanico', nombre: 'JHON RIVAS BERAUN' },
-    'jhonathan': { password: 'mec2025', rol: 'mecanico', nombre: 'JHONATHAN MAURICIO ROJAS' },
-    'jhordy': { password: 'mec2025', rol: 'mecanico', nombre: 'JHORDY ZELAYA RICAPA' },
-    'jhunior': { password: 'mec2025', rol: 'mecanico', nombre: 'JHUNIOR CAPCHA' },
-    'julinho': { password: 'mec2025', rol: 'mecanico', nombre: 'JULINHO ALEJANDRO JAVIER AYALA' },
-    'kevin': { password: 'mec2025', rol: 'mecanico', nombre: 'KEVIN POMA HUAYNATE' },
-    'leomar': { password: 'mec2025', rol: 'mecanico', nombre: 'LEOMAR ALY BALDEON CARHUARICRA' },
-    'luis': { password: 'mec2025', rol: 'mecanico', nombre: 'LUIS FALCON QUINTANA' },
-    'mauricio': { password: 'mec2025', rol: 'mecanico', nombre: 'MAURICIO CUENCA ANDERSON' },
-    'mauricio2': { password: 'mec2025', rol: 'mecanico', nombre: 'MAURICIO POMA PITER' },
-    'medina': { password: 'mec2025', rol: 'mecanico', nombre: 'MEDINA ESPINOZA KEVIN' },
-    'meza': { password: 'mec2025', rol: 'mecanico', nombre: 'MEZA CELIS DEAN ROYER' },
-    'minaya': { password: 'mec2025', rol: 'mecanico', nombre: 'MINAYA VERTIZ WALDIR FRANDHINO' },
-    'munoz': { password: 'mec2025', rol: 'mecanico', nombre: 'MUNOZ SERNA FREDY' },
-    'palacin': { password: 'mec2025', rol: 'mecanico', nombre: 'PALACIN DELGADO ROONY' },
-    'percy': { password: 'mec2025', rol: 'mecanico', nombre: 'PERCY MAURICIO ROJAS' },
-    'rafaelo': { password: 'mec2025', rol: 'mecanico', nombre: 'RAFAELO VILLAVICENCIO FRANK JOSEPH' },
-    'rogelio': { password: 'mec2025', rol: 'mecanico', nombre: 'ROGELIO ALVARADO MALPARTIDA' },
-    'waldemaro': { password: 'mec2025', rol: 'mecanico', nombre: 'WALDEMARO SANTIAGO CHAVEZ' },
-    'wilber': { password: 'mec2025', rol: 'mecanico', nombre: 'WILBER ALVARADO MALPARTIDA' },
-    // ── NUEVO USUARIO AGREGADO ──
-    'wilber2': { password: 'mec2025', rol: 'mecanico', nombre: 'WILBER HUGO ALBARADO MALPARTIDA' },
-    'williams': { password: 'mec2025', rol: 'mecanico', nombre: 'WILLIAMS POMA ALVARADO' },
-    'yachachin': { password: 'mec2025', rol: 'mecanico', nombre: 'YACHACHIN HUAMALI DAVID' },
-    'zevallos': { password: 'mec2025', rol: 'mecanico', nombre: 'ZEVALLOS FLORES LEO' }
-  };
-
-  // Función de login mejorada
-  function loginECOSEM(usuario, password) {
-    const user = USUARIOS_ECOSEM[usuario.toLowerCase().trim()];
-
-    if (!user) {
-      return { success: false, message: 'Usuario no encontrado' };
-    }
-
-    if (user.password !== password) {
-      return { success: false, message: 'Contraseña incorrecta' };
-    }
-
-    // Login exitoso
-    return {
-      success: true,
-      usuario: usuario,
-      rol: user.rol,
-      nombre: user.nombre
-    };
-  }
-
-  // Permisos por rol
-  const PERMISOS_ROL = {
-    admin: {
-      crearOT: true,
-      editarOT: true,
-      eliminarOT: true,
-      verTodas: true,
-      exportar: true,
-      imprimir: true, // SOLO ADMIN
-      gestionarMecanicos: true,
-      gestionarInventario: true,
-      verKPIs: true,
-      firmarOT: true
-    },
-    supervisor: {
-      crearOT: true,
-      editarOT: true,
-      eliminarOT: false,
-      verTodas: true,
-      exportar: true,
-      imprimir: false,
-      gestionarMecanicos: true,
-      gestionarInventario: true,
-      verKPIs: true,
-      firmarOT: true
-    },
-    gerencia: {
-      crearOT: false,
-      editarOT: false,
-      eliminarOT: false,
-      verTodas: true,
-      exportar: true,
-      imprimir: false,
-      gestionarMecanicos: false,
-      gestionarInventario: false,
-      verKPIs: true,
-      firmarOT: false
-    },
-    supervisor_area: {
-      crearOT: true,
-      editarOT: false,
-      eliminarOT: false,
-      verTodas: false,
-      exportar: false,
-      imprimir: false,
-      gestionarMecanicos: false,
-      gestionarInventario: false,
-      verKPIs: false,
-      firmarOT: false,
-      notificarMecanicos: true
-    },
-    mecanico: {
-      crearOT: true,
-      editarOT: false,
-      eliminarOT: false,
-      verTodas: false,
-      exportar: false,
-      imprimir: false,
-      gestionarMecanicos: false,
-      gestionarInventario: false,
-      verKPIs: false,
-      firmarOT: true
-    }
-  };
-
-  // Verificar permiso
-  function tienePermisoECOSEM(permiso) {
-    const rol = S.rol || 'mecanico';
-    return PERMISOS_ROL[rol]?.[permiso] || false;
-  }
-
-  // Aplicar sistema de login al formulario existente
-  function iniciarSesionECOSEM() {
-    const usuario = document.getElementById('login-user')?.value || '';
-    const password = document.getElementById('login-pass')?.value || '';
-
-    const resultado = loginECOSEM(usuario, password);
-
-    if (resultado.success) {
-      S.uid = 'user_' + Date.now();
-      S.rol = resultado.rol;
-      S.nombre = resultado.nombre;
-      S.usuario = resultado.usuario;
-
-      localStorage.setItem('ecosem_session', JSON.stringify(S));
-
-      document.getElementById('login-screen')?.classList.add('hidden');
-      document.getElementById('app-main')?.classList.remove('hidden');
-
-      toast(`✅ Bienvenido, ${S.nombre}`, '#30D158');
-
-      if (typeof cargarDatosIniciales === 'function') {
-        cargarDatosIniciales();
-      }
-    } else {
-      toast(`❌ ${resultado.message}`, '#FF3B30');
-    }
-  }
-
-  // Restaurar sesión al cargar
-  function restaurarSesionECOSEM() {
-    const session = localStorage.getItem('ecosem_session');
-    if (session) {
-      try {
-        const data = JSON.parse(session);
-        S.uid = data.uid;
-        S.rol = data.rol;
-        S.nombre = data.nombre;
-        S.usuario = data.usuario;
-
-        document.getElementById('login-screen')?.classList.add('hidden');
-        document.getElementById('app-main')?.classList.remove('hidden');
-
-        return true;
-      } catch (e) {
-        console.error('Error restaurando sesión:', e);
-      }
-    }
-    return false;
-  }
-
-  // Cerrar sesión
-  function cerrarSesionECOSEM() {
-    localStorage.removeItem('ecosem_session');
-    S = { uid: null, rol: null, nombre: null, usuario: null };
-
-    document.getElementById('login-screen')?.classList.remove('hidden');
-    document.getElementById('app-main')?.classList.add('hidden');
-
-    toast('👋 Sesión cerrada', '#6B7A99');
-  }
-
-  // Inicializar al cargar
-  document.addEventListener('DOMContentLoaded', () => {
-    if (!restaurarSesionECOSEM()) {
-      document.getElementById('login-screen')?.classList.remove('hidden');
-      document.getElementById('app-main')?.classList.add('hidden');
-    }
-  });
-
-  console.log('✅ Sistema de autenticación ECOSEM cargado (52 usuarios)');
-
-
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // MÓDULO DE GESTIÓN DE USUARIOS - ECOSEM HUARAUCACA
-  // Agregar, editar, eliminar usuarios desde el panel admin
-  // ═══════════════════════════════════════════════════════════════════════════════
-
-  async function renderGestionUsuarios() {
-    if (S.rol !== 'admin') {
-      toast('⛔ Solo administradores pueden gestionar usuarios', '#FF3B30');
-      return;
-    }
-
-    const app = document.getElementById('app');
-    app.innerHTML = `
-    <div style="padding:20px;max-width:1400px;margin:0 auto;">
-      <div style="background:var(--dark2);border:1px solid var(--bdr2);border-radius:16px;padding:20px 24px;margin-bottom:24px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-          <div>
-            <div style="font-family:\\'Barlow Condensed\\',sans-serif;font-weight:900;font-size:1.6rem;color:var(--cyan);letter-spacing:1px;margin-bottom:4px;">
-              👥 GESTIÓN DE USUARIOS
-            </div>
-            <div style="color:var(--mut);font-size:0.85rem;">
-              Agregar, editar y eliminar usuarios del sistema
-            </div>
-          </div>
-          <button onclick="abrirModalNuevoUsuario()" style="background:var(--cyan);color:#000;border:none;border-radius:10px;padding:12px 24px;font-weight:800;font-size:0.9rem;cursor:pointer;font-family:\\'Barlow Condensed\\',sans-serif;letter-spacing:1px;">
-            ➕ NUEVO USUARIO
-          </button>
-        </div>
-      </div>
-      <div style="background:var(--dark2);border:1px solid var(--bdr2);border-radius:16px;padding:16px 20px;margin-bottom:24px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-        <input type="text" id="buscar-usuario" placeholder="🔍 Buscar por nombre o usuario..." style="flex:1;min-width:250px;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:10px 14px;border-radius:8px;font-size:0.9rem;" oninput="filtrarUsuarios()">
-        <select id="filtro-rol" onchange="filtrarUsuarios()" style="background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:10px 14px;border-radius:8px;font-size:0.9rem;cursor:pointer;">
-          <option value="">Todos los roles</option>
-          <option value="admin">Administrador</option>
-          <option value="supervisor">Supervisor</option>
-          <option value="gerencia">Gerencia</option>
-          <option value="supervisor_area">Supervisor Área</option>
-          <option value="mecanico">Mecánico</option>
-        </select>
-        <div style="color:var(--mut);font-size:0.85rem;padding:0 8px;">
-          Total: <strong id="total-usuarios" style="color:var(--cyan);">0</strong> usuarios
-        </div>
-      </div>
-      <div style="background:var(--dark2);border:1px solid var(--bdr2);border-radius:16px;overflow:hidden;">
-        <div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
-            <thead>
-              <tr style="background:var(--dark3);border-bottom:1px solid var(--bdr2);">
-                <th style="padding:14px 16px;text-align:left;color:var(--mut);font-weight:700;white-space:nowrap;">USUARIO</th>
-                <th style="padding:14px 16px;text-align:left;color:var(--mut);font-weight:700;">NOMBRE COMPLETO</th>
-                <th style="padding:14px 16px;text-align:left;color:var(--mut);font-weight:700;">ROL</th>
-                <th style="padding:14px 16px;text-align:center;color:var(--mut);font-weight:700;">ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-usuarios-body">
-              <tr>
-                <td colspan="4" style="padding:40px;text-align:center;color:var(--mut);">Cargando usuarios...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  `;
-    cargarUsuariosFirestore();
-  }
-
-  let usuariosGlobales = [];
-
-  async function cargarUsuariosFirestore() {
-    try {
-      const snapshot = await db.collection('usuarios_sistema').orderBy('nombre').get();
-      usuariosGlobales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      if (usuariosGlobales.length === 0) {
-        await migrarUsuariosLocalesAFirestore();
-        return;
-      }
-      mostrarUsuarios(usuariosGlobales);
-    } catch (error) {
-      console.error('Error cargando usuarios:', error);
-      toast('❌ Error al cargar usuarios', '#FF3B30');
-    }
-  }
-
-  async function migrarUsuariosLocalesAFirestore() {
-    if (!USUARIOS_ECOSEM) {
-      toast('❌ No se encontró la lista de usuarios local', '#FF3B30');
-      return;
-    }
-    showL('Migrando usuarios a Firestore...');
-    try {
-      const batch = db.batch();
-      for (const [usuario, data] of Object.entries(USUARIOS_ECOSEM)) {
-        const docRef = db.collection('usuarios_sistema').doc(usuario);
-        batch.set(docRef, {
-          usuario: usuario,
-          password: data.password,
-          rol: data.rol,
-          nombre: data.nombre,
-          activo: true,
-          creado: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }
-      await batch.commit();
-      hideL();
-      toast('✅ Usuarios migrados correctamente', '#30D158');
-      cargarUsuariosFirestore();
-    } catch (error) {
-      hideL();
-      console.error('Error en migración:', error);
-      toast('❌ Error al migrar usuarios', '#FF3B30');
-    }
-  }
-
-  function mostrarUsuarios(usuarios) {
-    const tbody = document.getElementById('tabla-usuarios-body');
-    const totalEl = document.getElementById('total-usuarios');
-    if (!usuarios || usuarios.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="padding:40px;text-align:center;color:var(--mut);">No hay usuarios registrados</td></tr>';
-      totalEl.textContent = '0';
-      return;
-    }
-    totalEl.textContent = usuarios.length;
-    const rolesColores = { admin: '#F5A623', supervisor: '#0A84FF', gerencia: '#A78BFA', supervisor_area: '#00D4FF', mecanico: '#30D158' };
-    const rolesNombres = { admin: 'Administrador', supervisor: 'Supervisor', gerencia: 'Gerencia', supervisor_area: 'Supervisor Área', mecanico: 'Mecánico' };
-    tbody.innerHTML = usuarios.map((user, idx) => `
-    <tr style="border-bottom:1px solid var(--bdr);${idx % 2 === 0 ? 'background:rgba(255,255,255,0.01);' : ''}">
-      <td style="padding:14px 16px;"><div style="font-family:\\'JetBrains Mono\\',monospace;font-weight:700;color:var(--cyan);font-size:0.9rem;">${user.usuario || user.id}</div></td>
-      <td style="padding:14px 16px;"><div style="color:var(--txt);font-weight:500;">${user.nombre}</div></td>
-      <td style="padding:14px 16px;"><span style="background:${rolesColores[user.rol] || '#666'}22;color:${rolesColores[user.rol] || '#999'};padding:6px 12px;border-radius:6px;font-size:0.75rem;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">${rolesNombres[user.rol] || user.rol}</span></td>
-      <td style="padding:14px 16px;text-align:center;"><div style="display:flex;gap:8px;justify-content:center;">
-        <button onclick="editarUsuario('${user.id}')" style="background:var(--blue);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:700;" title="Editar">✏️</button>
-        <button onclick="cambiarPasswordUsuario('${user.id}')" style="background:var(--pu);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:700;" title="Cambiar contraseña">🔑</button>
-        <button onclick="eliminarUsuario('${user.id}', '${user.nombre}')" style="background:var(--red);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:700;" title="Eliminar">🗑️</button>
-      </div></td>
-    </tr>
-  `).join('');
-  }
-
-  function filtrarUsuarios() {
-    const busqueda = document.getElementById('buscar-usuario').value.toLowerCase();
-    const rolFiltro = document.getElementById('filtro-rol').value;
-    let usuariosFiltrados = usuariosGlobales;
-    if (busqueda) usuariosFiltrados = usuariosFiltrados.filter(u => u.nombre.toLowerCase().includes(busqueda) || (u.usuario && u.usuario.toLowerCase().includes(busqueda)) || u.id.toLowerCase().includes(busqueda));
-    if (rolFiltro) usuariosFiltrados = usuariosFiltrados.filter(u => u.rol === rolFiltro);
-    mostrarUsuarios(usuariosFiltrados);
-  }
-
-  function abrirModalNuevoUsuario() {
-    const modal = document.createElement('div');
-    modal.id = 'modal-nuevo-usuario';
-    modal.innerHTML = `<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;"><div style="background:var(--dark2);border-radius:16px;padding:28px;max-width:500px;width:100%;border:1px solid var(--bdr2);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;"><h3 style="color:var(--cyan);font-size:1.3rem;font-family:\\'Barlow Condensed\\',sans-serif;font-weight:900;letter-spacing:1px;margin:0;">➕ NUEVO USUARIO</h3><button onclick="cerrarModalUsuario()" style="background:transparent;border:none;color:var(--mut);font-size:1.5rem;cursor:pointer;">✕</button></div><div style="display:flex;flex-direction:column;gap:16px;"><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Usuario (login)</label><input type="text" id="nuevo-usuario" placeholder="Ej: carlos" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;font-family:\\'JetBrains Mono\\',monospace;"></div><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Nombre Completo</label><input type="text" id="nuevo-nombre" placeholder="Ej: CARLOS RODRIGUEZ PEREZ" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;"></div><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Contraseña</label><input type="text" id="nuevo-password" placeholder="Ej: mec2025" value="mec2025" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;font-family:\\'JetBrains Mono\\',monospace;"></div><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Rol</label><select id="nuevo-rol" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;cursor:pointer;"><option value="mecanico">Mecánico</option><option value="supervisor">Supervisor</option><option value="admin">Administrador</option><option value="gerencia">Gerencia</option><option value="supervisor_area">Supervisor Área</option></select></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;"><button onclick="cerrarModalUsuario()" style="background:var(--dark3);color:var(--mut);border:1px solid var(--bdr2);padding:12px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.9rem;">Cancelar</button><button onclick="guardarNuevoUsuario()" style="background:var(--cyan);color:#000;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:800;font-size:0.9rem;font-family:\\'Barlow Condensed\\',sans-serif;letter-spacing:1px;">GUARDAR</button></div></div></div></div>`;
-    document.body.appendChild(modal);
-  }
-
-  async function guardarNuevoUsuario() {
-    const usuario = document.getElementById('nuevo-usuario').value.trim().toLowerCase();
-    const nombre = document.getElementById('nuevo-nombre').value.trim().toUpperCase();
-    const password = document.getElementById('nuevo-password').value.trim();
-    const rol = document.getElementById('nuevo-rol').value;
-    if (!usuario || !nombre || !password) { toast('⚠️ Completa todos los campos', '#F5A623'); return; }
-    const existe = usuariosGlobales.find(u => u.id === usuario || u.usuario === usuario);
-    if (existe) { toast('❌ El usuario ya existe', '#FF3B30'); return; }
-    showL('Creando usuario...');
-    try {
-      await db.collection('usuarios_sistema').doc(usuario).set({ usuario, nombre, password, rol, activo: true, creado: firebase.firestore.FieldValue.serverTimestamp() });
-      hideL();
-      toast('✅ Usuario creado correctamente', '#30D158');
-      cerrarModalUsuario();
-      cargarUsuariosFirestore();
-    } catch (error) {
-      hideL();
-      console.error('Error creando usuario:', error);
-      toast('❌ Error al crear usuario', '#FF3B30');
-    }
-  }
-
-  function editarUsuario(id) {
-    const user = usuariosGlobales.find(u => u.id === id);
-    if (!user) return;
-    const modal = document.createElement('div');
-    modal.id = 'modal-editar-usuario';
-    modal.innerHTML = `<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;"><div style="background:var(--dark2);border-radius:16px;padding:28px;max-width:500px;width:100%;border:1px solid var(--bdr2);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;"><h3 style="color:var(--blue);font-size:1.3rem;font-family:\\'Barlow Condensed\\',sans-serif;font-weight:900;letter-spacing:1px;margin:0;">✏️ EDITAR USUARIO</h3><button onclick="cerrarModalUsuario()" style="background:transparent;border:none;color:var(--mut);font-size:1.5rem;cursor:pointer;">✕</button></div><div style="display:flex;flex-direction:column;gap:16px;"><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;">Usuario (login)</label><input type="text" value="${user.usuario || user.id}" disabled style="width:100%;background:var(--dark4);border:1px solid var(--bdr);color:var(--mut);padding:12px 14px;border-radius:8px;font-size:0.95rem;font-family:\\'JetBrains Mono\\',monospace;cursor:not-allowed;"></div><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;">Nombre Completo</label><input type="text" id="edit-nombre" value="${user.nombre}" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;"></div><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;">Rol</label><select id="edit-rol" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;cursor:pointer;"><option value="mecanico" ${user.rol === 'mecanico' ? 'selected' : ''}>Mecánico</option><option value="supervisor" ${user.rol === 'supervisor' ? 'selected' : ''}>Supervisor</option><option value="admin" ${user.rol === 'admin' ? 'selected' : ''}>Administrador</option><option value="gerencia" ${user.rol === 'gerencia' ? 'selected' : ''}>Gerencia</option><option value="supervisor_area" ${user.rol === 'supervisor_area' ? 'selected' : ''}>Supervisor Área</option></select></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;"><button onclick="cerrarModalUsuario()" style="background:var(--dark3);color:var(--mut);border:1px solid var(--bdr2);padding:12px;border-radius:8px;cursor:pointer;font-weight:700;">Cancelar</button><button onclick="guardarEdicionUsuario('${id}')" style="background:var(--blue);color:#fff;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:800;font-family:\\'Barlow Condensed\\',sans-serif;letter-spacing:1px;">GUARDAR</button></div></div></div></div>`;
-    document.body.appendChild(modal);
-  }
-
-  async function guardarEdicionUsuario(id) {
-    const nombre = document.getElementById('edit-nombre').value.trim().toUpperCase();
-    const rol = document.getElementById('edit-rol').value;
-    if (!nombre) { toast('⚠️ El nombre no puede estar vacío', '#F5A623'); return; }
-    showL('Actualizando usuario...');
-    try {
-      await db.collection('usuarios_sistema').doc(id).update({ nombre, rol, modificado: firebase.firestore.FieldValue.serverTimestamp() });
-      hideL();
-      toast('✅ Usuario actualizado', '#30D158');
-      cerrarModalUsuario();
-      cargarUsuariosFirestore();
-    } catch (error) {
-      hideL();
-      console.error('Error actualizando usuario:', error);
-      toast('❌ Error al actualizar', '#FF3B30');
-    }
-  }
-
-  function cambiarPasswordUsuario(id) {
-    const user = usuariosGlobales.find(u => u.id === id);
-    if (!user) return;
-    const modal = document.createElement('div');
-    modal.id = 'modal-cambiar-password';
-    modal.innerHTML = `<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;"><div style="background:var(--dark2);border-radius:16px;padding:28px;max-width:450px;width:100%;border:1px solid var(--bdr2);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;"><h3 style="color:var(--pu);font-size:1.3rem;font-family:\\'Barlow Condensed\\',sans-serif;font-weight:900;letter-spacing:1px;margin:0;">🔑 CAMBIAR CONTRASEÑA</h3><button onclick="cerrarModalUsuario()" style="background:transparent;border:none;color:var(--mut);font-size:1.5rem;cursor:pointer;">✕</button></div><div style="margin-bottom:20px;padding:12px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:8px;"><div style="color:var(--mut);font-size:0.8rem;margin-bottom:4px;">Usuario:</div><div style="color:var(--txt);font-weight:700;font-family:\\'JetBrains Mono\\',monospace;">${user.usuario || user.id}</div><div style="color:var(--mut);font-size:0.8rem;margin-top:8px;margin-bottom:4px;">Nombre:</div><div style="color:var(--txt);font-weight:600;">${user.nombre}</div></div><div style="margin-bottom:20px;"><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;">Nueva Contraseña</label><input type="text" id="nueva-password" value="${user.password}" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:1rem;font-family:\\'JetBrains Mono\\',monospace;"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><button onclick="cerrarModalUsuario()" style="background:var(--dark3);color:var(--mut);border:1px solid var(--bdr2);padding:12px;border-radius:8px;cursor:pointer;font-weight:700;">Cancelar</button><button onclick="guardarNuevaPassword('${id}')" style="background:var(--pu);color:#fff;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:800;font-family:\\'Barlow Condensed\\',sans-serif;letter-spacing:1px;">CAMBIAR</button></div></div></div>`;
-    document.body.appendChild(modal);
-  }
-
-  async function guardarNuevaPassword(id) {
-    const nuevaPassword = document.getElementById('nueva-password').value.trim();
-    if (!nuevaPassword || nuevaPassword.length < 4) { toast('⚠️ La contraseña debe tener al menos 4 caracteres', '#F5A623'); return; }
-    showL('Actualizando contraseña...');
-    try {
-      await db.collection('usuarios_sistema').doc(id).update({ password: nuevaPassword, modificado: firebase.firestore.FieldValue.serverTimestamp() });
-      hideL();
-      toast('✅ Contraseña actualizada', '#30D158');
-      cerrarModalUsuario();
-      cargarUsuariosFirestore();
-    } catch (error) {
-      hideL();
-      console.error('Error actualizando contraseña:', error);
-      toast('❌ Error al actualizar', '#FF3B30');
-    }
-  }
-
-  function eliminarUsuario(id, nombre) {
-    if (!confirm(`¿Eliminar usuario "${nombre}"?\\n\\nEsta acción no se puede deshacer.`)) return;
-    showL('Eliminando usuario...');
-    db.collection('usuarios_sistema').doc(id).delete()
-      .then(() => { hideL(); toast('✅ Usuario eliminado', '#30D158'); cargarUsuariosFirestore(); })
-      .catch(error => { hideL(); console.error('Error eliminando usuario:', error); toast('❌ Error al eliminar', '#FF3B30'); });
-  }
-
-  function cerrarModalUsuario() {
-    document.getElementById('modal-nuevo-usuario')?.remove();
-    document.getElementById('modal-editar-usuario')?.remove();
-    document.getElementById('modal-cambiar-password')?.remove();
-  }
-
-  console.log('✅ Módulo de Gestión de Usuarios cargado');
-
-  // ECOSEM - Sistema de Firma Digital para Mecánicos
-
-  let canvasFirma = null;
-  let ctxFirma = null;
-  let firmando = false;
-  let firmaGuardada = null;
-
-  function abrirFirmaDigital(otId, tipoFirma) {
-    if (tipoFirma === 'mecanico' && S.rol !== 'mecanico' && S.rol !== 'admin') {
-      toast('⛔ Solo mecánicos pueden firmar aquí', '#FF3B30');
-      return;
-    }
-
-    const modalHTML = `
-    <div id="modal-firma" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;">
-      <div style="background:var(--dark2);border-radius:16px;padding:24px;max-width:600px;width:100%;border:1px solid var(--bdr2);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-          <h3 style="color:var(--cyan);font-size:1.2rem;">✍️ Firma Digital - ${tipoFirma.toUpperCase()}</h3>
-          <button onclick="cerrarFirmaDigital()" style="background:transparent;border:none;color:var(--mut);font-size:1.5rem;cursor:pointer;">✕</button>
-        </div>
-        <div style="text-align:center;color:var(--mut);margin-bottom:15px;font-size:0.9rem;">Dibuja tu firma con el dedo o mouse</div>
-        <div style="background:#fff;border-radius:8px;overflow:hidden;border:2px solid var(--cyan);margin-bottom:15px;width:100%;">
-          <canvas id="canvas-firma" width="552" height="200" style="display:block;cursor:crosshair;touch-action:none;width:100%;max-width:100%;object-fit:contain;"></canvas>
-        </div>
-        <div style="color:var(--mut);font-size:0.85rem;margin-bottom:15px;text-align:center;">
-          Nombre: <strong style="color:var(--cyan);">${S.nombre || 'Usuario'}</strong>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-          <button onclick="limpiarFirma()" class="btn-secondary">🗑️ Limpiar</button>
-          <button onclick="cerrarFirmaDigital()" class="btn-secondary">❌ Cancelar</button>
-          <button onclick="guardarFirma('${otId}', '${tipoFirma}')" class="btn-primary">✅ Guardar</button>
-        </div>
-      </div>
-    </div>`;
-
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    setTimeout(() => inicializarCanvas(), 100);
-  }
-
-  function inicializarCanvas() {
-    canvasFirma = document.getElementById('canvas-firma');
-    if (!canvasFirma) return;
-    ctxFirma = canvasFirma.getContext('2d');
-    ctxFirma.strokeStyle = '#000';
-    ctxFirma.lineWidth = 2;
-    ctxFirma.lineCap = 'round';
-    ctxFirma.lineJoin = 'round';
-
-    canvasFirma.addEventListener('mousedown', iniciarFirma);
-    canvasFirma.addEventListener('mousemove', dibujarFirma);
-    canvasFirma.addEventListener('mouseup', terminarFirma);
-    canvasFirma.addEventListener('mouseleave', terminarFirma);
-
-    canvasFirma.addEventListener('touchstart', (e) => { e.preventDefault(); const t = e.touches[0]; canvasFirma.dispatchEvent(new MouseEvent('mousedown', { clientX: t.clientX, clientY: t.clientY })); });
-    canvasFirma.addEventListener('touchmove', (e) => { e.preventDefault(); const t = e.touches[0]; canvasFirma.dispatchEvent(new MouseEvent('mousemove', { clientX: t.clientX, clientY: t.clientY })); });
-    canvasFirma.addEventListener('touchend', (e) => { e.preventDefault(); canvasFirma.dispatchEvent(new MouseEvent('mouseup', {})); });
-  }
-
-  function iniciarFirma(e) {
-    firmando = true;
-    const rect = canvasFirma.getBoundingClientRect();
-    const scaleX = canvasFirma.width / rect.width;
-    const scaleY = canvasFirma.height / rect.height;
-    ctxFirma.beginPath();
-    ctxFirma.moveTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
-  }
-
-  function dibujarFirma(e) {
-    if (!firmando) return;
-    const rect = canvasFirma.getBoundingClientRect();
-    const scaleX = canvasFirma.width / rect.width;
-    const scaleY = canvasFirma.height / rect.height;
-    ctxFirma.lineTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
-    ctxFirma.stroke();
-  }
-
-  function terminarFirma() { firmando = false; ctxFirma.closePath(); }
-
-  function limpiarFirma() {
-    if (!ctxFirma || !canvasFirma) return;
-    ctxFirma.clearRect(0, 0, canvasFirma.width, canvasFirma.height);
-  }
-
-  async function guardarFirma(otId, tipoFirma) {
-    if (!canvasFirma) { toast('❌ Error: Canvas no encontrado', '#FF3B30'); return; }
-    const imageData = ctxFirma.getImageData(0, 0, canvasFirma.width, canvasFirma.height);
-    let hayDibujo = false;
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      if (imageData.data[i + 3] !== 0) { hayDibujo = true; break; }
-    }
-    if (!hayDibujo) { toast('⚠️ Por favor dibuja tu firma primero', '#F5A623'); return; }
-
-    showL('Guardando firma...');
-    try {
-      const firmaBase64 = canvasFirma.toDataURL('image/png');
-      await db.collection('ordenes_trabajo').doc(otId).update({
-        [`firma_${tipoFirma}`]: firmaBase64,
-        [`firma_${tipoFirma}_nombre`]: S.nombre || 'Usuario',
-        [`firma_${tipoFirma}_fecha`]: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      hideL();
-      toast('✅ Firma guardada correctamente', '#30D158');
-      cerrarFirmaDigital();
-      if (typeof actualizarVistaOT === 'function') actualizarVistaOT();
-    } catch (e) {
-      hideL();
-      toast('❌ Error al guardar firma', '#FF3B30');
-    }
-  }
-
-  function cerrarFirmaDigital() {
-    document.getElementById('modal-firma')?.remove();
-    canvasFirma = null; ctxFirma = null; firmando = false;
-  }
-
-  function obtenerFirmaHTML(firmaBase64, nombre) {
-    if (!firmaBase64) return `<div class="firma-linea"><div style="height:50px;border-bottom:1.5px solid #000;margin-bottom:5px;"></div>${nombre || 'Nombre y Firma'}</div>`;
-    return `<div class="firma-linea"><img src="${firmaBase64}" style="height:50px;max-width:100%;object-fit:contain;margin-bottom:5px;border-bottom:1.5px solid #000;" alt="Firma"><div style="font-size:8pt;margin-top:3px;">${nombre || 'Firmado digitalmente'}</div></div>`;
-  }
-
-  function generarBotonFirma(otId, tipoFirma, firmado = false) {
-    const rol = S.rol;
-    let mostrar = false;
-    if (tipoFirma === 'mecanico' && (rol === 'mecanico' || rol === 'admin')) mostrar = true;
-    if (tipoFirma === 'operador' && (rol === 'operador' || rol === 'admin')) mostrar = true;
-    if (tipoFirma === 'supervisor' && (rol === 'supervisor' || rol === 'admin')) mostrar = true;
-    if (!mostrar) return '';
-    const icono = firmado ? '✅' : '✍️';
-    const texto = firmado ? 'Firmado' : 'Firmar OT';
-    const color = firmado ? '#30D158' : '#00D4FF';
-    return `<button onclick="abrirFirmaDigital('${otId}','${tipoFirma}')" style="background:${firmado ? 'rgba(48,209,88,0.2)' : 'rgba(0,212,255,0.2)'};border:1px solid ${color};color:${color};padding:8px 16px;border-radius:8px;font-size:0.85rem;cursor:pointer;">${icono} ${texto}</button>`;
-  }
-
-  console.log('✅ Sistema de firma digital cargado');
-
-</script>
-
-<!-- Sistema de Impresión de OT — INLINE -->
-<script>
-  // ECOSEM - Sistema de Impresión de OT Profesional
-  // Solo ADMINISTRADOR puede imprimir
-  // Formato actualizado: igual al diseño oficial con logo, checkboxes y sistema afectado
-
-  // ═══════════════════════════════════════════════════════
-  // LOGO ECOSEM EN BASE64 (SVG inline como alternativa)
-  // ═══════════════════════════════════════════════════════
-
-  const LOGO_ECOSEM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="60" height="60">
-  <rect width="100" height="100" rx="15" fill="#0D1117"/>
-  <path d="M50 10 L58 30 L80 30 L63 45 L70 65 L50 52 L30 65 L37 45 L20 30 L42 30 Z" fill="#F5A623" opacity="0.15"/>
-  <circle cx="50" cy="50" r="28" fill="none" stroke="#F5A623" stroke-width="6"/>
-  <circle cx="50" cy="50" r="16" fill="none" stroke="#F5A623" stroke-width="3"/>
-  <rect x="47" y="22" width="6" height="10" rx="2" fill="#F5A623"/>
-  <rect x="47" y="68" width="6" height="10" rx="2" fill="#F5A623"/>
-  <rect x="22" y="47" width="10" height="6" rx="2" fill="#F5A623"/>
-  <rect x="68" y="47" width="10" height="6" rx="2" fill="#F5A623"/>
-  <path d="M42 35 L50 50 L58 35" fill="none" stroke="#F5A623" stroke-width="3" stroke-linecap="round"/>
-  <path d="M35 42 L50 50 L35 58" fill="none" stroke="#F5A623" stroke-width="3" stroke-linecap="round"/>
-</svg>`;
-
-  // ═══════════════════════════════════════════════════════
-  // IMPRIMIR OT RELLENADA (con datos) — FORMATO OFICIAL
-  // ═══════════════════════════════════════════════════════
-
+  // ── FUNCIONES DE IMPRESIÓN DE OT (mismo scope) ──
   function ECOSEM_RENDER_OT(otData) {
 
     const ventana = window.open('', '_blank');
@@ -6330,6 +5686,633 @@
     // Llamar directamente — la función ya está inline en esta página
     ECOSEM_RENDER_OT(otData);
   }
+
+  // Exponer al scope global para que los onclick funcionen desde HTML dinámico
+  window.ECOSEM_PRINT_V2  = ECOSEM_PRINT_V2;
+  window.ECOSEM_RENDER_OT = ECOSEM_RENDER_OT;
+
+
+
+</script>
+
+<!-- Sistema de Autenticación ECOSEM (52 usuarios) -->
+<script>
+  // ECOSEM - Sistema de Autenticación con 52 Usuarios
+  // Credenciales actualizadas según lista oficial
+
+  const USUARIOS_ECOSEM = {
+    // ADMINISTRADORES
+    'admin': { password: 'ecosem2025', rol: 'admin', nombre: 'Administrador 1' },
+    'admin2': { password: 'ecosem2025', rol: 'admin', nombre: 'Administrador 2' },
+
+    // SUPERVISORES
+    'supervisor': { password: 'sup2025', rol: 'supervisor', nombre: 'Supervisor Mantenimiento' },
+    'supervisor2': { password: 'sup2025', rol: 'supervisor', nombre: 'Supervisor 2' },
+
+    // GERENCIA
+    'gerencia': { password: 'ger2025', rol: 'gerencia', nombre: 'Gerencia' },
+
+    // SUPERVISORES DE ÁREA
+    'area1': { password: 'area2025', rol: 'supervisor_area', nombre: 'Supervisor Área 1' },
+    'area2': { password: 'area2025', rol: 'supervisor_area', nombre: 'Supervisor Área 2' },
+
+    // MECÁNICOS (44 en total)
+    'aldair': { password: 'mec2025', rol: 'mecanico', nombre: 'ALDAIR YADMIR FLORES LEYVA' },
+    'alex': { password: 'mec2025', rol: 'mecanico', nombre: 'ALEX SANTIAGO BONILLA' },
+    'alfonso': { password: 'mec2025', rol: 'mecanico', nombre: 'ALFONSO UGARTE JAVIER' },
+    'alvarado': { password: 'mec2025', rol: 'mecanico', nombre: 'ALVARADO SOTO WILLIAM' },
+    'brandon': { password: 'mec2025', rol: 'mecanico', nombre: 'BRANDON ARCE CASIMIRO' },
+    'brayan': { password: 'mec2025', rol: 'mecanico', nombre: 'BRAYAN MARLON CAJACURI ROJAS' },
+    'callupe': { password: 'mec2025', rol: 'mecanico', nombre: 'CALLUPE MATIAS JOSMEL' },
+    'campos': { password: 'mec2025', rol: 'mecanico', nombre: 'CAMPOS ALVARADO JHONATAN FELIX' },
+    'caqui': { password: 'mec2025', rol: 'mecanico', nombre: 'CAQUI TORRES FRAN' },
+    'carhuachin': { password: 'mec2025', rol: 'mecanico', nombre: 'CARHUACHIN CAJACHAGUA FERLANS MANUEL' },
+    'celis': { password: 'mec2025', rol: 'mecanico', nombre: 'CELIS SECADA KEVIN' },
+    'colca': { password: 'mec2025', rol: 'mecanico', nombre: 'COLCA COLLAZOS JHON' },
+    'daniel': { password: 'mec2025', rol: 'mecanico', nombre: 'DANIEL PUENTE SACRAMENTO' },
+    'david': { password: 'mec2025', rol: 'mecanico', nombre: 'DAVID BAUTISTA RIOS' },
+    'estrada': { password: 'mec2025', rol: 'mecanico', nombre: 'ESTRADA MINAYA NILTON' },
+    'flores': { password: 'mec2025', rol: 'mecanico', nombre: 'FLORES MAYTA LUIS RAUL' },
+    'huacho': { password: 'mec2025', rol: 'mecanico', nombre: 'HUACHO TRINIDAD ISAAC LEONARDO' },
+    'huaman': { password: 'mec2025', rol: 'mecanico', nombre: 'HUAMAN CARLOS PABLO' },
+    'huaman2': { password: 'mec2025', rol: 'mecanico', nombre: 'HUAMAN POMA MARCO ANTONIO' },
+    'hugo': { password: 'mec2025', rol: 'mecanico', nombre: 'HUGO ELEAZAR VIVAS POMA' },
+    'jhasler': { password: 'mec2025', rol: 'mecanico', nombre: 'JHASLER KLISMAN PANEZ MAURICIO' },
+    'jhon': { password: 'mec2025', rol: 'mecanico', nombre: 'JHON RIVAS BERAUN' },
+    'jhonathan': { password: 'mec2025', rol: 'mecanico', nombre: 'JHONATHAN MAURICIO ROJAS' },
+    'jhordy': { password: 'mec2025', rol: 'mecanico', nombre: 'JHORDY ZELAYA RICAPA' },
+    'jhunior': { password: 'mec2025', rol: 'mecanico', nombre: 'JHUNIOR CAPCHA' },
+    'julinho': { password: 'mec2025', rol: 'mecanico', nombre: 'JULINHO ALEJANDRO JAVIER AYALA' },
+    'kevin': { password: 'mec2025', rol: 'mecanico', nombre: 'KEVIN POMA HUAYNATE' },
+    'leomar': { password: 'mec2025', rol: 'mecanico', nombre: 'LEOMAR ALY BALDEON CARHUARICRA' },
+    'luis': { password: 'mec2025', rol: 'mecanico', nombre: 'LUIS FALCON QUINTANA' },
+    'mauricio': { password: 'mec2025', rol: 'mecanico', nombre: 'MAURICIO CUENCA ANDERSON' },
+    'mauricio2': { password: 'mec2025', rol: 'mecanico', nombre: 'MAURICIO POMA PITER' },
+    'medina': { password: 'mec2025', rol: 'mecanico', nombre: 'MEDINA ESPINOZA KEVIN' },
+    'meza': { password: 'mec2025', rol: 'mecanico', nombre: 'MEZA CELIS DEAN ROYER' },
+    'minaya': { password: 'mec2025', rol: 'mecanico', nombre: 'MINAYA VERTIZ WALDIR FRANDHINO' },
+    'munoz': { password: 'mec2025', rol: 'mecanico', nombre: 'MUNOZ SERNA FREDY' },
+    'palacin': { password: 'mec2025', rol: 'mecanico', nombre: 'PALACIN DELGADO ROONY' },
+    'percy': { password: 'mec2025', rol: 'mecanico', nombre: 'PERCY MAURICIO ROJAS' },
+    'rafaelo': { password: 'mec2025', rol: 'mecanico', nombre: 'RAFAELO VILLAVICENCIO FRANK JOSEPH' },
+    'rogelio': { password: 'mec2025', rol: 'mecanico', nombre: 'ROGELIO ALVARADO MALPARTIDA' },
+    'waldemaro': { password: 'mec2025', rol: 'mecanico', nombre: 'WALDEMARO SANTIAGO CHAVEZ' },
+    'wilber': { password: 'mec2025', rol: 'mecanico', nombre: 'WILBER ALVARADO MALPARTIDA' },
+    // ── NUEVO USUARIO AGREGADO ──
+    'wilber2': { password: 'mec2025', rol: 'mecanico', nombre: 'WILBER HUGO ALBARADO MALPARTIDA' },
+    'williams': { password: 'mec2025', rol: 'mecanico', nombre: 'WILLIAMS POMA ALVARADO' },
+    'yachachin': { password: 'mec2025', rol: 'mecanico', nombre: 'YACHACHIN HUAMALI DAVID' },
+    'zevallos': { password: 'mec2025', rol: 'mecanico', nombre: 'ZEVALLOS FLORES LEO' }
+  };
+
+  // Función de login mejorada
+  function loginECOSEM(usuario, password) {
+    const user = USUARIOS_ECOSEM[usuario.toLowerCase().trim()];
+
+    if (!user) {
+      return { success: false, message: 'Usuario no encontrado' };
+    }
+
+    if (user.password !== password) {
+      return { success: false, message: 'Contraseña incorrecta' };
+    }
+
+    // Login exitoso
+    return {
+      success: true,
+      usuario: usuario,
+      rol: user.rol,
+      nombre: user.nombre
+    };
+  }
+
+  // Permisos por rol
+  const PERMISOS_ROL = {
+    admin: {
+      crearOT: true,
+      editarOT: true,
+      eliminarOT: true,
+      verTodas: true,
+      exportar: true,
+      imprimir: true, // SOLO ADMIN
+      gestionarMecanicos: true,
+      gestionarInventario: true,
+      verKPIs: true,
+      firmarOT: true
+    },
+    supervisor: {
+      crearOT: true,
+      editarOT: true,
+      eliminarOT: false,
+      verTodas: true,
+      exportar: true,
+      imprimir: false,
+      gestionarMecanicos: true,
+      gestionarInventario: true,
+      verKPIs: true,
+      firmarOT: true
+    },
+    gerencia: {
+      crearOT: false,
+      editarOT: false,
+      eliminarOT: false,
+      verTodas: true,
+      exportar: true,
+      imprimir: false,
+      gestionarMecanicos: false,
+      gestionarInventario: false,
+      verKPIs: true,
+      firmarOT: false
+    },
+    supervisor_area: {
+      crearOT: true,
+      editarOT: false,
+      eliminarOT: false,
+      verTodas: false,
+      exportar: false,
+      imprimir: false,
+      gestionarMecanicos: false,
+      gestionarInventario: false,
+      verKPIs: false,
+      firmarOT: false,
+      notificarMecanicos: true
+    },
+    mecanico: {
+      crearOT: true,
+      editarOT: false,
+      eliminarOT: false,
+      verTodas: false,
+      exportar: false,
+      imprimir: false,
+      gestionarMecanicos: false,
+      gestionarInventario: false,
+      verKPIs: false,
+      firmarOT: true
+    }
+  };
+
+  // Verificar permiso
+  function tienePermisoECOSEM(permiso) {
+    const rol = S.rol || 'mecanico';
+    return PERMISOS_ROL[rol]?.[permiso] || false;
+  }
+
+  // Aplicar sistema de login al formulario existente
+  function iniciarSesionECOSEM() {
+    const usuario = document.getElementById('login-user')?.value || '';
+    const password = document.getElementById('login-pass')?.value || '';
+
+    const resultado = loginECOSEM(usuario, password);
+
+    if (resultado.success) {
+      S.uid = 'user_' + Date.now();
+      S.rol = resultado.rol;
+      S.nombre = resultado.nombre;
+      S.usuario = resultado.usuario;
+
+      localStorage.setItem('ecosem_session', JSON.stringify(S));
+
+      document.getElementById('login-screen')?.classList.add('hidden');
+      document.getElementById('app-main')?.classList.remove('hidden');
+
+      toast(`✅ Bienvenido, ${S.nombre}`, '#30D158');
+
+      if (typeof cargarDatosIniciales === 'function') {
+        cargarDatosIniciales();
+      }
+    } else {
+      toast(`❌ ${resultado.message}`, '#FF3B30');
+    }
+  }
+
+  // Restaurar sesión al cargar
+  function restaurarSesionECOSEM() {
+    const session = localStorage.getItem('ecosem_session');
+    if (session) {
+      try {
+        const data = JSON.parse(session);
+        S.uid = data.uid;
+        S.rol = data.rol;
+        S.nombre = data.nombre;
+        S.usuario = data.usuario;
+
+        document.getElementById('login-screen')?.classList.add('hidden');
+        document.getElementById('app-main')?.classList.remove('hidden');
+
+        return true;
+      } catch (e) {
+        console.error('Error restaurando sesión:', e);
+      }
+    }
+    return false;
+  }
+
+  // Cerrar sesión
+  function cerrarSesionECOSEM() {
+    localStorage.removeItem('ecosem_session');
+    S = { uid: null, rol: null, nombre: null, usuario: null };
+
+    document.getElementById('login-screen')?.classList.remove('hidden');
+    document.getElementById('app-main')?.classList.add('hidden');
+
+    toast('👋 Sesión cerrada', '#6B7A99');
+  }
+
+  // Inicializar al cargar
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!restaurarSesionECOSEM()) {
+      document.getElementById('login-screen')?.classList.remove('hidden');
+      document.getElementById('app-main')?.classList.add('hidden');
+    }
+  });
+
+  console.log('✅ Sistema de autenticación ECOSEM cargado (52 usuarios)');
+
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // MÓDULO DE GESTIÓN DE USUARIOS - ECOSEM HUARAUCACA
+  // Agregar, editar, eliminar usuarios desde el panel admin
+  // ═══════════════════════════════════════════════════════════════════════════════
+
+  async function renderGestionUsuarios() {
+    if (S.rol !== 'admin') {
+      toast('⛔ Solo administradores pueden gestionar usuarios', '#FF3B30');
+      return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+    <div style="padding:20px;max-width:1400px;margin:0 auto;">
+      <div style="background:var(--dark2);border:1px solid var(--bdr2);border-radius:16px;padding:20px 24px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+          <div>
+            <div style="font-family:\\'Barlow Condensed\\',sans-serif;font-weight:900;font-size:1.6rem;color:var(--cyan);letter-spacing:1px;margin-bottom:4px;">
+              👥 GESTIÓN DE USUARIOS
+            </div>
+            <div style="color:var(--mut);font-size:0.85rem;">
+              Agregar, editar y eliminar usuarios del sistema
+            </div>
+          </div>
+          <button onclick="abrirModalNuevoUsuario()" style="background:var(--cyan);color:#000;border:none;border-radius:10px;padding:12px 24px;font-weight:800;font-size:0.9rem;cursor:pointer;font-family:\\'Barlow Condensed\\',sans-serif;letter-spacing:1px;">
+            ➕ NUEVO USUARIO
+          </button>
+        </div>
+      </div>
+      <div style="background:var(--dark2);border:1px solid var(--bdr2);border-radius:16px;padding:16px 20px;margin-bottom:24px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <input type="text" id="buscar-usuario" placeholder="🔍 Buscar por nombre o usuario..." style="flex:1;min-width:250px;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:10px 14px;border-radius:8px;font-size:0.9rem;" oninput="filtrarUsuarios()">
+        <select id="filtro-rol" onchange="filtrarUsuarios()" style="background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:10px 14px;border-radius:8px;font-size:0.9rem;cursor:pointer;">
+          <option value="">Todos los roles</option>
+          <option value="admin">Administrador</option>
+          <option value="supervisor">Supervisor</option>
+          <option value="gerencia">Gerencia</option>
+          <option value="supervisor_area">Supervisor Área</option>
+          <option value="mecanico">Mecánico</option>
+        </select>
+        <div style="color:var(--mut);font-size:0.85rem;padding:0 8px;">
+          Total: <strong id="total-usuarios" style="color:var(--cyan);">0</strong> usuarios
+        </div>
+      </div>
+      <div style="background:var(--dark2);border:1px solid var(--bdr2);border-radius:16px;overflow:hidden;">
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+            <thead>
+              <tr style="background:var(--dark3);border-bottom:1px solid var(--bdr2);">
+                <th style="padding:14px 16px;text-align:left;color:var(--mut);font-weight:700;white-space:nowrap;">USUARIO</th>
+                <th style="padding:14px 16px;text-align:left;color:var(--mut);font-weight:700;">NOMBRE COMPLETO</th>
+                <th style="padding:14px 16px;text-align:left;color:var(--mut);font-weight:700;">ROL</th>
+                <th style="padding:14px 16px;text-align:center;color:var(--mut);font-weight:700;">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-usuarios-body">
+              <tr>
+                <td colspan="4" style="padding:40px;text-align:center;color:var(--mut);">Cargando usuarios...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+    cargarUsuariosFirestore();
+  }
+
+  let usuariosGlobales = [];
+
+  async function cargarUsuariosFirestore() {
+    try {
+      const snapshot = await db.collection('usuarios_sistema').orderBy('nombre').get();
+      usuariosGlobales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (usuariosGlobales.length === 0) {
+        await migrarUsuariosLocalesAFirestore();
+        return;
+      }
+      mostrarUsuarios(usuariosGlobales);
+    } catch (error) {
+      console.error('Error cargando usuarios:', error);
+      toast('❌ Error al cargar usuarios', '#FF3B30');
+    }
+  }
+
+  async function migrarUsuariosLocalesAFirestore() {
+    if (!USUARIOS_ECOSEM) {
+      toast('❌ No se encontró la lista de usuarios local', '#FF3B30');
+      return;
+    }
+    showL('Migrando usuarios a Firestore...');
+    try {
+      const batch = db.batch();
+      for (const [usuario, data] of Object.entries(USUARIOS_ECOSEM)) {
+        const docRef = db.collection('usuarios_sistema').doc(usuario);
+        batch.set(docRef, {
+          usuario: usuario,
+          password: data.password,
+          rol: data.rol,
+          nombre: data.nombre,
+          activo: true,
+          creado: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      await batch.commit();
+      hideL();
+      toast('✅ Usuarios migrados correctamente', '#30D158');
+      cargarUsuariosFirestore();
+    } catch (error) {
+      hideL();
+      console.error('Error en migración:', error);
+      toast('❌ Error al migrar usuarios', '#FF3B30');
+    }
+  }
+
+  function mostrarUsuarios(usuarios) {
+    const tbody = document.getElementById('tabla-usuarios-body');
+    const totalEl = document.getElementById('total-usuarios');
+    if (!usuarios || usuarios.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:40px;text-align:center;color:var(--mut);">No hay usuarios registrados</td></tr>';
+      totalEl.textContent = '0';
+      return;
+    }
+    totalEl.textContent = usuarios.length;
+    const rolesColores = { admin: '#F5A623', supervisor: '#0A84FF', gerencia: '#A78BFA', supervisor_area: '#00D4FF', mecanico: '#30D158' };
+    const rolesNombres = { admin: 'Administrador', supervisor: 'Supervisor', gerencia: 'Gerencia', supervisor_area: 'Supervisor Área', mecanico: 'Mecánico' };
+    tbody.innerHTML = usuarios.map((user, idx) => `
+    <tr style="border-bottom:1px solid var(--bdr);${idx % 2 === 0 ? 'background:rgba(255,255,255,0.01);' : ''}">
+      <td style="padding:14px 16px;"><div style="font-family:\\'JetBrains Mono\\',monospace;font-weight:700;color:var(--cyan);font-size:0.9rem;">${user.usuario || user.id}</div></td>
+      <td style="padding:14px 16px;"><div style="color:var(--txt);font-weight:500;">${user.nombre}</div></td>
+      <td style="padding:14px 16px;"><span style="background:${rolesColores[user.rol] || '#666'}22;color:${rolesColores[user.rol] || '#999'};padding:6px 12px;border-radius:6px;font-size:0.75rem;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">${rolesNombres[user.rol] || user.rol}</span></td>
+      <td style="padding:14px 16px;text-align:center;"><div style="display:flex;gap:8px;justify-content:center;">
+        <button onclick="editarUsuario('${user.id}')" style="background:var(--blue);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:700;" title="Editar">✏️</button>
+        <button onclick="cambiarPasswordUsuario('${user.id}')" style="background:var(--pu);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:700;" title="Cambiar contraseña">🔑</button>
+        <button onclick="eliminarUsuario('${user.id}', '${user.nombre}')" style="background:var(--red);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:700;" title="Eliminar">🗑️</button>
+      </div></td>
+    </tr>
+  `).join('');
+  }
+
+  function filtrarUsuarios() {
+    const busqueda = document.getElementById('buscar-usuario').value.toLowerCase();
+    const rolFiltro = document.getElementById('filtro-rol').value;
+    let usuariosFiltrados = usuariosGlobales;
+    if (busqueda) usuariosFiltrados = usuariosFiltrados.filter(u => u.nombre.toLowerCase().includes(busqueda) || (u.usuario && u.usuario.toLowerCase().includes(busqueda)) || u.id.toLowerCase().includes(busqueda));
+    if (rolFiltro) usuariosFiltrados = usuariosFiltrados.filter(u => u.rol === rolFiltro);
+    mostrarUsuarios(usuariosFiltrados);
+  }
+
+  function abrirModalNuevoUsuario() {
+    const modal = document.createElement('div');
+    modal.id = 'modal-nuevo-usuario';
+    modal.innerHTML = `<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;"><div style="background:var(--dark2);border-radius:16px;padding:28px;max-width:500px;width:100%;border:1px solid var(--bdr2);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;"><h3 style="color:var(--cyan);font-size:1.3rem;font-family:\\'Barlow Condensed\\',sans-serif;font-weight:900;letter-spacing:1px;margin:0;">➕ NUEVO USUARIO</h3><button onclick="cerrarModalUsuario()" style="background:transparent;border:none;color:var(--mut);font-size:1.5rem;cursor:pointer;">✕</button></div><div style="display:flex;flex-direction:column;gap:16px;"><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Usuario (login)</label><input type="text" id="nuevo-usuario" placeholder="Ej: carlos" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;font-family:\\'JetBrains Mono\\',monospace;"></div><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Nombre Completo</label><input type="text" id="nuevo-nombre" placeholder="Ej: CARLOS RODRIGUEZ PEREZ" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;"></div><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Contraseña</label><input type="text" id="nuevo-password" placeholder="Ej: mec2025" value="mec2025" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;font-family:\\'JetBrains Mono\\',monospace;"></div><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Rol</label><select id="nuevo-rol" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;cursor:pointer;"><option value="mecanico">Mecánico</option><option value="supervisor">Supervisor</option><option value="admin">Administrador</option><option value="gerencia">Gerencia</option><option value="supervisor_area">Supervisor Área</option></select></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;"><button onclick="cerrarModalUsuario()" style="background:var(--dark3);color:var(--mut);border:1px solid var(--bdr2);padding:12px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.9rem;">Cancelar</button><button onclick="guardarNuevoUsuario()" style="background:var(--cyan);color:#000;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:800;font-size:0.9rem;font-family:\\'Barlow Condensed\\',sans-serif;letter-spacing:1px;">GUARDAR</button></div></div></div></div>`;
+    document.body.appendChild(modal);
+  }
+
+  async function guardarNuevoUsuario() {
+    const usuario = document.getElementById('nuevo-usuario').value.trim().toLowerCase();
+    const nombre = document.getElementById('nuevo-nombre').value.trim().toUpperCase();
+    const password = document.getElementById('nuevo-password').value.trim();
+    const rol = document.getElementById('nuevo-rol').value;
+    if (!usuario || !nombre || !password) { toast('⚠️ Completa todos los campos', '#F5A623'); return; }
+    const existe = usuariosGlobales.find(u => u.id === usuario || u.usuario === usuario);
+    if (existe) { toast('❌ El usuario ya existe', '#FF3B30'); return; }
+    showL('Creando usuario...');
+    try {
+      await db.collection('usuarios_sistema').doc(usuario).set({ usuario, nombre, password, rol, activo: true, creado: firebase.firestore.FieldValue.serverTimestamp() });
+      hideL();
+      toast('✅ Usuario creado correctamente', '#30D158');
+      cerrarModalUsuario();
+      cargarUsuariosFirestore();
+    } catch (error) {
+      hideL();
+      console.error('Error creando usuario:', error);
+      toast('❌ Error al crear usuario', '#FF3B30');
+    }
+  }
+
+  function editarUsuario(id) {
+    const user = usuariosGlobales.find(u => u.id === id);
+    if (!user) return;
+    const modal = document.createElement('div');
+    modal.id = 'modal-editar-usuario';
+    modal.innerHTML = `<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;"><div style="background:var(--dark2);border-radius:16px;padding:28px;max-width:500px;width:100%;border:1px solid var(--bdr2);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;"><h3 style="color:var(--blue);font-size:1.3rem;font-family:\\'Barlow Condensed\\',sans-serif;font-weight:900;letter-spacing:1px;margin:0;">✏️ EDITAR USUARIO</h3><button onclick="cerrarModalUsuario()" style="background:transparent;border:none;color:var(--mut);font-size:1.5rem;cursor:pointer;">✕</button></div><div style="display:flex;flex-direction:column;gap:16px;"><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;">Usuario (login)</label><input type="text" value="${user.usuario || user.id}" disabled style="width:100%;background:var(--dark4);border:1px solid var(--bdr);color:var(--mut);padding:12px 14px;border-radius:8px;font-size:0.95rem;font-family:\\'JetBrains Mono\\',monospace;cursor:not-allowed;"></div><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;">Nombre Completo</label><input type="text" id="edit-nombre" value="${user.nombre}" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;"></div><div><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;">Rol</label><select id="edit-rol" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:0.95rem;cursor:pointer;"><option value="mecanico" ${user.rol === 'mecanico' ? 'selected' : ''}>Mecánico</option><option value="supervisor" ${user.rol === 'supervisor' ? 'selected' : ''}>Supervisor</option><option value="admin" ${user.rol === 'admin' ? 'selected' : ''}>Administrador</option><option value="gerencia" ${user.rol === 'gerencia' ? 'selected' : ''}>Gerencia</option><option value="supervisor_area" ${user.rol === 'supervisor_area' ? 'selected' : ''}>Supervisor Área</option></select></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;"><button onclick="cerrarModalUsuario()" style="background:var(--dark3);color:var(--mut);border:1px solid var(--bdr2);padding:12px;border-radius:8px;cursor:pointer;font-weight:700;">Cancelar</button><button onclick="guardarEdicionUsuario('${id}')" style="background:var(--blue);color:#fff;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:800;font-family:\\'Barlow Condensed\\',sans-serif;letter-spacing:1px;">GUARDAR</button></div></div></div></div>`;
+    document.body.appendChild(modal);
+  }
+
+  async function guardarEdicionUsuario(id) {
+    const nombre = document.getElementById('edit-nombre').value.trim().toUpperCase();
+    const rol = document.getElementById('edit-rol').value;
+    if (!nombre) { toast('⚠️ El nombre no puede estar vacío', '#F5A623'); return; }
+    showL('Actualizando usuario...');
+    try {
+      await db.collection('usuarios_sistema').doc(id).update({ nombre, rol, modificado: firebase.firestore.FieldValue.serverTimestamp() });
+      hideL();
+      toast('✅ Usuario actualizado', '#30D158');
+      cerrarModalUsuario();
+      cargarUsuariosFirestore();
+    } catch (error) {
+      hideL();
+      console.error('Error actualizando usuario:', error);
+      toast('❌ Error al actualizar', '#FF3B30');
+    }
+  }
+
+  function cambiarPasswordUsuario(id) {
+    const user = usuariosGlobales.find(u => u.id === id);
+    if (!user) return;
+    const modal = document.createElement('div');
+    modal.id = 'modal-cambiar-password';
+    modal.innerHTML = `<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;"><div style="background:var(--dark2);border-radius:16px;padding:28px;max-width:450px;width:100%;border:1px solid var(--bdr2);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;"><h3 style="color:var(--pu);font-size:1.3rem;font-family:\\'Barlow Condensed\\',sans-serif;font-weight:900;letter-spacing:1px;margin:0;">🔑 CAMBIAR CONTRASEÑA</h3><button onclick="cerrarModalUsuario()" style="background:transparent;border:none;color:var(--mut);font-size:1.5rem;cursor:pointer;">✕</button></div><div style="margin-bottom:20px;padding:12px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:8px;"><div style="color:var(--mut);font-size:0.8rem;margin-bottom:4px;">Usuario:</div><div style="color:var(--txt);font-weight:700;font-family:\\'JetBrains Mono\\',monospace;">${user.usuario || user.id}</div><div style="color:var(--mut);font-size:0.8rem;margin-top:8px;margin-bottom:4px;">Nombre:</div><div style="color:var(--txt);font-weight:600;">${user.nombre}</div></div><div style="margin-bottom:20px;"><label style="display:block;color:var(--mut);font-size:0.8rem;font-weight:600;margin-bottom:6px;">Nueva Contraseña</label><input type="text" id="nueva-password" value="${user.password}" style="width:100%;background:var(--dark3);border:1px solid var(--bdr2);color:var(--txt);padding:12px 14px;border-radius:8px;font-size:1rem;font-family:\\'JetBrains Mono\\',monospace;"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><button onclick="cerrarModalUsuario()" style="background:var(--dark3);color:var(--mut);border:1px solid var(--bdr2);padding:12px;border-radius:8px;cursor:pointer;font-weight:700;">Cancelar</button><button onclick="guardarNuevaPassword('${id}')" style="background:var(--pu);color:#fff;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:800;font-family:\\'Barlow Condensed\\',sans-serif;letter-spacing:1px;">CAMBIAR</button></div></div></div>`;
+    document.body.appendChild(modal);
+  }
+
+  async function guardarNuevaPassword(id) {
+    const nuevaPassword = document.getElementById('nueva-password').value.trim();
+    if (!nuevaPassword || nuevaPassword.length < 4) { toast('⚠️ La contraseña debe tener al menos 4 caracteres', '#F5A623'); return; }
+    showL('Actualizando contraseña...');
+    try {
+      await db.collection('usuarios_sistema').doc(id).update({ password: nuevaPassword, modificado: firebase.firestore.FieldValue.serverTimestamp() });
+      hideL();
+      toast('✅ Contraseña actualizada', '#30D158');
+      cerrarModalUsuario();
+      cargarUsuariosFirestore();
+    } catch (error) {
+      hideL();
+      console.error('Error actualizando contraseña:', error);
+      toast('❌ Error al actualizar', '#FF3B30');
+    }
+  }
+
+  function eliminarUsuario(id, nombre) {
+    if (!confirm(`¿Eliminar usuario "${nombre}"?\\n\\nEsta acción no se puede deshacer.`)) return;
+    showL('Eliminando usuario...');
+    db.collection('usuarios_sistema').doc(id).delete()
+      .then(() => { hideL(); toast('✅ Usuario eliminado', '#30D158'); cargarUsuariosFirestore(); })
+      .catch(error => { hideL(); console.error('Error eliminando usuario:', error); toast('❌ Error al eliminar', '#FF3B30'); });
+  }
+
+  function cerrarModalUsuario() {
+    document.getElementById('modal-nuevo-usuario')?.remove();
+    document.getElementById('modal-editar-usuario')?.remove();
+    document.getElementById('modal-cambiar-password')?.remove();
+  }
+
+  console.log('✅ Módulo de Gestión de Usuarios cargado');
+
+  // ECOSEM - Sistema de Firma Digital para Mecánicos
+
+  let canvasFirma = null;
+  let ctxFirma = null;
+  let firmando = false;
+  let firmaGuardada = null;
+
+  function abrirFirmaDigital(otId, tipoFirma) {
+    if (tipoFirma === 'mecanico' && S.rol !== 'mecanico' && S.rol !== 'admin') {
+      toast('⛔ Solo mecánicos pueden firmar aquí', '#FF3B30');
+      return;
+    }
+
+    const modalHTML = `
+    <div id="modal-firma" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;">
+      <div style="background:var(--dark2);border-radius:16px;padding:24px;max-width:600px;width:100%;border:1px solid var(--bdr2);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h3 style="color:var(--cyan);font-size:1.2rem;">✍️ Firma Digital - ${tipoFirma.toUpperCase()}</h3>
+          <button onclick="cerrarFirmaDigital()" style="background:transparent;border:none;color:var(--mut);font-size:1.5rem;cursor:pointer;">✕</button>
+        </div>
+        <div style="text-align:center;color:var(--mut);margin-bottom:15px;font-size:0.9rem;">Dibuja tu firma con el dedo o mouse</div>
+        <div style="background:#fff;border-radius:8px;overflow:hidden;border:2px solid var(--cyan);margin-bottom:15px;width:100%;">
+          <canvas id="canvas-firma" width="552" height="200" style="display:block;cursor:crosshair;touch-action:none;width:100%;max-width:100%;object-fit:contain;"></canvas>
+        </div>
+        <div style="color:var(--mut);font-size:0.85rem;margin-bottom:15px;text-align:center;">
+          Nombre: <strong style="color:var(--cyan);">${S.nombre || 'Usuario'}</strong>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <button onclick="limpiarFirma()" class="btn-secondary">🗑️ Limpiar</button>
+          <button onclick="cerrarFirmaDigital()" class="btn-secondary">❌ Cancelar</button>
+          <button onclick="guardarFirma('${otId}', '${tipoFirma}')" class="btn-primary">✅ Guardar</button>
+        </div>
+      </div>
+    </div>`;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    setTimeout(() => inicializarCanvas(), 100);
+  }
+
+  function inicializarCanvas() {
+    canvasFirma = document.getElementById('canvas-firma');
+    if (!canvasFirma) return;
+    ctxFirma = canvasFirma.getContext('2d');
+    ctxFirma.strokeStyle = '#000';
+    ctxFirma.lineWidth = 2;
+    ctxFirma.lineCap = 'round';
+    ctxFirma.lineJoin = 'round';
+
+    canvasFirma.addEventListener('mousedown', iniciarFirma);
+    canvasFirma.addEventListener('mousemove', dibujarFirma);
+    canvasFirma.addEventListener('mouseup', terminarFirma);
+    canvasFirma.addEventListener('mouseleave', terminarFirma);
+
+    canvasFirma.addEventListener('touchstart', (e) => { e.preventDefault(); const t = e.touches[0]; canvasFirma.dispatchEvent(new MouseEvent('mousedown', { clientX: t.clientX, clientY: t.clientY })); });
+    canvasFirma.addEventListener('touchmove', (e) => { e.preventDefault(); const t = e.touches[0]; canvasFirma.dispatchEvent(new MouseEvent('mousemove', { clientX: t.clientX, clientY: t.clientY })); });
+    canvasFirma.addEventListener('touchend', (e) => { e.preventDefault(); canvasFirma.dispatchEvent(new MouseEvent('mouseup', {})); });
+  }
+
+  function iniciarFirma(e) {
+    firmando = true;
+    const rect = canvasFirma.getBoundingClientRect();
+    const scaleX = canvasFirma.width / rect.width;
+    const scaleY = canvasFirma.height / rect.height;
+    ctxFirma.beginPath();
+    ctxFirma.moveTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+  }
+
+  function dibujarFirma(e) {
+    if (!firmando) return;
+    const rect = canvasFirma.getBoundingClientRect();
+    const scaleX = canvasFirma.width / rect.width;
+    const scaleY = canvasFirma.height / rect.height;
+    ctxFirma.lineTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+    ctxFirma.stroke();
+  }
+
+  function terminarFirma() { firmando = false; ctxFirma.closePath(); }
+
+  function limpiarFirma() {
+    if (!ctxFirma || !canvasFirma) return;
+    ctxFirma.clearRect(0, 0, canvasFirma.width, canvasFirma.height);
+  }
+
+  async function guardarFirma(otId, tipoFirma) {
+    if (!canvasFirma) { toast('❌ Error: Canvas no encontrado', '#FF3B30'); return; }
+    const imageData = ctxFirma.getImageData(0, 0, canvasFirma.width, canvasFirma.height);
+    let hayDibujo = false;
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      if (imageData.data[i + 3] !== 0) { hayDibujo = true; break; }
+    }
+    if (!hayDibujo) { toast('⚠️ Por favor dibuja tu firma primero', '#F5A623'); return; }
+
+    showL('Guardando firma...');
+    try {
+      const firmaBase64 = canvasFirma.toDataURL('image/png');
+      await db.collection('ordenes_trabajo').doc(otId).update({
+        [`firma_${tipoFirma}`]: firmaBase64,
+        [`firma_${tipoFirma}_nombre`]: S.nombre || 'Usuario',
+        [`firma_${tipoFirma}_fecha`]: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      hideL();
+      toast('✅ Firma guardada correctamente', '#30D158');
+      cerrarFirmaDigital();
+      if (typeof actualizarVistaOT === 'function') actualizarVistaOT();
+    } catch (e) {
+      hideL();
+      toast('❌ Error al guardar firma', '#FF3B30');
+    }
+  }
+
+  function cerrarFirmaDigital() {
+    document.getElementById('modal-firma')?.remove();
+    canvasFirma = null; ctxFirma = null; firmando = false;
+  }
+
+  function obtenerFirmaHTML(firmaBase64, nombre) {
+    if (!firmaBase64) return `<div class="firma-linea"><div style="height:50px;border-bottom:1.5px solid #000;margin-bottom:5px;"></div>${nombre || 'Nombre y Firma'}</div>`;
+    return `<div class="firma-linea"><img src="${firmaBase64}" style="height:50px;max-width:100%;object-fit:contain;margin-bottom:5px;border-bottom:1.5px solid #000;" alt="Firma"><div style="font-size:8pt;margin-top:3px;">${nombre || 'Firmado digitalmente'}</div></div>`;
+  }
+
+  function generarBotonFirma(otId, tipoFirma, firmado = false) {
+    const rol = S.rol;
+    let mostrar = false;
+    if (tipoFirma === 'mecanico' && (rol === 'mecanico' || rol === 'admin')) mostrar = true;
+    if (tipoFirma === 'operador' && (rol === 'operador' || rol === 'admin')) mostrar = true;
+    if (tipoFirma === 'supervisor' && (rol === 'supervisor' || rol === 'admin')) mostrar = true;
+    if (!mostrar) return '';
+    const icono = firmado ? '✅' : '✍️';
+    const texto = firmado ? 'Firmado' : 'Firmar OT';
+    const color = firmado ? '#30D158' : '#00D4FF';
+    return `<button onclick="abrirFirmaDigital('${otId}','${tipoFirma}')" style="background:${firmado ? 'rgba(48,209,88,0.2)' : 'rgba(0,212,255,0.2)'};border:1px solid ${color};color:${color};padding:8px 16px;border-radius:8px;font-size:0.85rem;cursor:pointer;">${icono} ${texto}</button>`;
+  }
+
+  console.log('✅ Sistema de firma digital cargado');
+
+</script>
+
+
   // ── EXPORTAR DASHBOARD A EXCEL PROFESIONAL - ECOSEM ──
 
   async function exportarDashboardExcel() {
