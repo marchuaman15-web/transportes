@@ -3819,29 +3819,46 @@
   // ── Trabajos list ──
   function addTrabajo() {
     if (!window._trabajos) window._trabajos = [];
-    window._trabajos.push({ desc: '', cant: '', repuesto: '' });
+    if (window._trabajos.length >= 12) { toast('⚠️ Máximo 12 ítems por OT', '#F5A623'); return; }
+    window._trabajos.push({ desc: '', cant: '', unidad: '', repuesto: '' });
     renderTrabajos();
   }
   function quitarTrabajo(i) {
     window._trabajos.splice(i, 1);
-    if (!window._trabajos.length) window._trabajos = [{ desc: '', cant: '', repuesto: '' }];
+    if (!window._trabajos.length) window._trabajos = [{ desc: '', cant: '', unidad: '', repuesto: '' }];
     renderTrabajos();
   }
   function renderTrabajos() {
     const el = $('trabajos-list'); if (!el) return;
-    if (!window._trabajos || !window._trabajos.length) window._trabajos = [{ desc: '', cant: '', repuesto: '' }];
+    if (!window._trabajos || !window._trabajos.length) window._trabajos = [{ desc: '', cant: '', unidad: '', repuesto: '' }];
     el.innerHTML = window._trabajos.map((t, i) => `
     <div style="background:var(--dark3);border:1px solid var(--bdr2);border-radius:10px;padding:10px 12px;margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <div style="width:28px;height:28px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:#000;">${i + 1}</div>
-        ${i > 0 ? `<button onclick="quitarTrabajo(${i})" style="background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:1rem;">✕</button>` : ''}
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:24px;height:24px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:800;color:#000;">${i + 1}</div>
+          <span style="color:var(--mut);font-size:0.75rem;">Ítem ${i + 1} de ${window._trabajos.length}</span>
+        </div>
+        ${i > 0 ? `<button onclick="quitarTrabajo(${i})" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#EF4444;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:0.8rem;">✕ Quitar</button>` : ''}
       </div>
-      <textarea placeholder="Descripción del trabajo..." rows="2" style="width:100%;background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.85rem;resize:vertical;box-sizing:border-box;"
+      <textarea placeholder="Descripción del trabajo realizado..." rows="2" style="width:100%;background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.85rem;resize:vertical;box-sizing:border-box;"
         oninput="window._trabajos[${i}].desc=this.value">${t.desc || ''}</textarea>
-      <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-top:6px;">
+      <div style="display:grid;grid-template-columns:80px 100px 1fr;gap:6px;margin-top:6px;">
         <input type="number" placeholder="Cant." min="0" style="background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.85rem;"
           value="${t.cant || ''}" oninput="window._trabajos[${i}].cant=this.value">
-        <input type="text" placeholder="Repuesto / Artículo" style="background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.85rem;"
+        <select style="background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.82rem;"
+          onchange="window._trabajos[${i}].unidad=this.value">
+          <option value="" ${!t.unidad ? 'selected' : ''}>Unidad</option>
+          <option value="UND" ${t.unidad==='UND' ? 'selected' : ''}>UND</option>
+          <option value="GAL" ${t.unidad==='GAL' ? 'selected' : ''}>GAL</option>
+          <option value="LT" ${t.unidad==='LT' ? 'selected' : ''}>LT</option>
+          <option value="KG" ${t.unidad==='KG' ? 'selected' : ''}>KG</option>
+          <option value="MT" ${t.unidad==='MT' ? 'selected' : ''}>MT</option>
+          <option value="JGO" ${t.unidad==='JGO' ? 'selected' : ''}>JGO</option>
+          <option value="KIT" ${t.unidad==='KIT' ? 'selected' : ''}>KIT</option>
+          <option value="PAR" ${t.unidad==='PAR' ? 'selected' : ''}>PAR</option>
+          <option value="HRS" ${t.unidad==='HRS' ? 'selected' : ''}>HRS</option>
+        </select>
+        <input type="text" placeholder="Repuesto / Artículo / Insumo" style="background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.85rem;"
           value="${t.repuesto || ''}" oninput="window._trabajos[${i}].repuesto=this.value">
       </div>
     </div>`).join('');
@@ -5449,12 +5466,13 @@
           <tr>
             <th class="td-num">#</th>
             <th>Descripción del Trabajo</th>
-            <th class="td-cant">Cantidad</th>
+            <th class="td-cant">Cant.</th>
+            <th style="width:48px;text-align:center;">Unid.</th>
             <th class="td-rep">Repuesto / Artículo</th>
           </tr>
         </thead>
         <tbody>
-          ${ECOSEM_FILAS_OT(otData.trabajos || otData.descripcion, 8)}
+          ${ECOSEM_FILAS_OT(otData.trabajos || otData.descripcion, 12)}
         </tbody>
       </table>
     </div>
@@ -5542,7 +5560,7 @@
   // GENERAR FILAS DE TRABAJOS
   // ═══════════════════════════════════════════════════════
 
-  function ECOSEM_FILAS_OT(trabajos, totalFilas = 8) {
+  function ECOSEM_FILAS_OT(trabajos, totalFilas = 12) {
     let filas = '';
 
     if (typeof trabajos === 'string' && trabajos.trim()) {
@@ -5550,6 +5568,7 @@
       <td class="td-num">1</td>
       <td>${trabajos}</td>
       <td class="td-cant"></td>
+      <td style="text-align:center;width:48px;"></td>
       <td class="td-rep"></td>
     </tr>`;
       for (let i = 2; i <= totalFilas; i++) {
@@ -5557,6 +5576,7 @@
         <td class="td-num">${i}</td>
         <td>&nbsp;</td>
         <td class="td-cant"></td>
+        <td style="text-align:center;width:48px;"></td>
         <td class="td-rep"></td>
       </tr>`;
       }
@@ -5567,8 +5587,9 @@
       trabajos.forEach((t, i) => {
         filas += `<tr>
         <td class="td-num">${i + 1}</td>
-        <td>${t.descripcion || t.trabajo || t || ''}</td>
-        <td class="td-cant">${t.cantidad || ''}</td>
+        <td>${t.desc || t.descripcion || t.trabajo || (typeof t === 'string' ? t : '') || ''}</td>
+        <td class="td-cant">${t.cant || t.cantidad || ''}</td>
+        <td style="text-align:center;width:48px;font-size:7.5pt;">${t.unidad || ''}</td>
         <td class="td-rep">${t.repuesto || t.articulo || ''}</td>
       </tr>`;
       });
@@ -5578,6 +5599,7 @@
         <td class="td-num">${trabajos.length + i + 1}</td>
         <td>&nbsp;</td>
         <td class="td-cant"></td>
+        <td style="text-align:center;width:48px;"></td>
         <td class="td-rep"></td>
       </tr>`;
       }
@@ -5589,6 +5611,7 @@
       <td class="td-num">${i}</td>
       <td>&nbsp;</td>
       <td class="td-cant"></td>
+      <td style="text-align:center;width:48px;"></td>
       <td class="td-rep"></td>
     </tr>`;
     }
