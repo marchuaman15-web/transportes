@@ -3023,9 +3023,6 @@
   ${pBtn('🚛', 'Sup. Área', 'Ingreso de vehículos', 'abrirSupervisorArea()', 0.05)}
   ${pBtn('📋', 'Historial', 'Ver historial completo', 'abrirHistorial()', 0.10)}
   ${pBtn('📊', 'Dashboard', 'KPIs y estadísticas', 'abrirDashboard()', 0.15)}
-  
-  ${pBtn('📥', 'Exportar Excel', 'Dashboard completo en Excel', 'exportarDashboardExcel()', 0.17, 'panel-btn-green')}
-  
   ${pBtn('👷', 'Personal', 'Gestionar mecánicos', 'abrirMecanicos()', 0.20)}
   ${pBtn('👥', 'Usuarios', 'Agregar/editar usuarios', 'renderGestionUsuarios()', 0.23)}
   ${pBtn('📦', 'Inventario', 'Control de repuestos', 'abrirInventario()', 0.25)}
@@ -3458,8 +3455,69 @@
   async function abrirForm(ot = null, preData = null) {
     _editId = ot ? ot.id : null;
     _mecsList = ot ? (ot.mecanicos || [ot.mecanicoPrincipal || '']).filter(Boolean) : (S.rol === 'mecanico' ? [S.nombre] : []);
-    window._trabajos = ot ? [...(ot.trabajos || [])] : [{ desc: '', cant: '', repuesto: '' }];
-    if (!window._trabajos.length) window._trabajos = [{ desc: '', cant: '', repuesto: '' }];
+
+    // Migrar trabajos al nuevo formato con array de 5 repuestos con cant/unidad propias
+    if (ot && ot.trabajos && ot.trabajos.length) {
+      window._trabajos = ot.trabajos.map(t => {
+        let repuestos = [];
+        
+        // Si tiene array de repuestos
+        if (Array.isArray(t.repuestos)) {
+          repuestos = t.repuestos.map(r => {
+            if (typeof r === 'string') {
+              return { nombre: r, cant: '', unidad: '' };
+            } else if (r && typeof r === 'object') {
+              return {
+                nombre: r.nombre || r.repuesto || '',
+                cant: r.cant || r.cantidad || '',
+                unidad: r.unidad || ''
+              };
+            }
+            return { nombre: '', cant: '', unidad: '' };
+          });
+        }
+        // Si tiene repuesto único (formato antiguo)
+        else if (t.repuesto) {
+          repuestos.push({
+            nombre: t.repuesto,
+            cant: t.cant || t.cantidad || '',
+            unidad: t.unidad || ''
+          });
+        }
+        
+        // Completar hasta 5 repuestos
+        while (repuestos.length < 5) {
+          repuestos.push({ nombre: '', cant: '', unidad: '' });
+        }
+        
+        return {
+          desc: t.desc || t.descripcion || '',
+          repuestos: repuestos
+        };
+      });
+    } else {
+      window._trabajos = [{
+        desc: '',
+        repuestos: [
+          { nombre: '', cant: '', unidad: '' },
+          { nombre: '', cant: '', unidad: '' },
+          { nombre: '', cant: '', unidad: '' },
+          { nombre: '', cant: '', unidad: '' },
+          { nombre: '', cant: '', unidad: '' }
+        ]
+      }];
+    }
+    if (!window._trabajos.length) window._trabajos = [{
+      desc: '',
+      repuestos: [
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' }
+      ]
+    }];
+
     if (preData && preData.mecanico && !_mecsList.length) _mecsList = [preData.mecanico];
     showL('Cargando...');
     // Build mechanic options
@@ -3488,14 +3546,14 @@
       'HIDRÁULICO': ['Cavitación (ruido en bomba)', 'Vástagos rayados', 'Descenso de tolva por gravedad', 'Reventón de mangueras', 'Lentitud hidráulica'],
       'DIRECCIÓN': ['Dureza en el volante', 'Juego excesivo (vaivén)', 'Respuesta tardía', 'Fugas en sellos de cilindros'],
       'FRENOS': ['Bloqueo de ruedas', 'Cristalización de fricciones', 'Presencia de aceite en líneas de aire', 'Pedal esponjoso/largo'],
-      'SUSPENSIÓN': ['Equipo inclinado', 'Pérdida de nitrógeno/aceite', 'Hojas de muelle fracturadas', 'Soportes (pernos) sueltos o rotos'],
-      'ELÉCTRICO': ['Sulfatación', 'Falta de carga', 'Cortocircuito en arnés', 'Lecturas erróneas en panel (check engine)', 'Luces inoperativas'],
+      'SUSPENSIÓN': ['Amortiguadores en mal estado', 'Pérdida de nitrógeno/aceite', 'Hojas de muelle fracturadas', 'Soportes (pernos) sueltos o rotos'],
+      'ELÉCTRICO': ['Sulfatación', 'scaneo ', 'cables en mal estado ', 'Cortocircuito en arnés', 'Lecturas erróneas en panel (check engine)', 'Luces inoperativas'],
       'NEUMÁTICO': ['Agua en el sistema', 'Carga lenta de tanques', 'Fugas audibles en válvulas relé', 'Diafragmas de pulmón rotos', 'Secador de aire'],
       'ESTRUCTURAL': ['Fisuras en soldadura', 'Deformación por sobrecarga', 'Pernos de anclaje de cabina rotos', 'Corrosión profunda'],
-      'TOLVA': ['Desgaste abrasivo de planchas', 'Deformación de compuerta', 'Trabas en el mecanismo de apertura', 'Abolladuras por impacto'],
+      'TOLVA': ['soldadura de base de bolsa', 'soldadura de implementos diversos','soldadura de base de llanta de repuesto','arenado de interior', 'parche de agujero', 'cambio o soldadura de base de piston neumatico', 'Deformación de compuerta', 'Mantenimiento general', 'engrase en los puntos', 'Abolladuras por impacto'],
       'IMPLEMENTOS': ['Juego excesivo en el enganche', 'Falta de cierre de seguridad', 'Desgaste de bocinas', 'Falta de lubricación (engrase)'],
       'REFRIGERACIÓN': ['Recalentamiento del motor', 'Fugas de refrigerante', 'Aletas de radiador obstruidas', 'Ventilador inoperativo (falla de embrague)'],
-      'SOLDADURA': ['Desprendimiento de cordón', 'Falta de penetración', 'Porosidad en la unión', 'Fisuras térmicas'],
+      'SOLDADURA': ['extraccion de bujes', 'extraccion de cruceta cardan','Falta de penetración', 'Porosidad en la unión', 'Fisuras térmicas'],
       'CABINA': ['Fallas en controles (joysticks)', 'Aire acondicionado sin enfriamiento', 'Cristales rajados', 'Insonorización deficiente'],
     };
 
@@ -3762,19 +3820,20 @@
     'LLANTERÍA': ['Cortes por rocas', 'Separación de banda (calor)', 'Desgaste irregular', 'Pérdida de presión', 'Espárragos rotos/deformados'],
     'MOTOR': ['Pérdida de potencia', 'Humo denso', 'Gripado de pistón', 'Contaminación de aceite (agua/combustible)', 'Ruidos internos (golpeteo)'],
     'TRANSMISIÓN': ['Patinamiento de marchas', 'Recalentamiento de aceite', 'Rotura de crucetas', 'Vibración excesiva', 'Demora en cambios'],
-    'DIFERENCIAL': ['Zumbido/ruido metálico', 'Viruta en tapón magnético', 'Fuga en retenes de eje', 'Rotura de dientes de engranaje'],
+    'DIFERENCIAL': ['Zumbido/ruido metálico', 'Viruta en tapón magnético', 'corona malogrado', 'cardan en mal estado', 'Fuga en retenes de eje', 'Rotura de dientes de engranaje'],
     'HIDRÁULICO': ['Cavitación (ruido en bomba)', 'Vástagos rayados', 'Descenso de tolva por gravedad', 'Reventón de mangueras', 'Lentitud hidráulica'],
     'DIRECCIÓN': ['Dureza en el volante', 'Juego excesivo (vaivén)', 'Respuesta tardía', 'Fugas en sellos de cilindros'],
     'FRENOS': ['Bloqueo de ruedas', 'Cristalización de fricciones', 'Presencia de aceite en líneas de aire', 'Pedal esponjoso/largo'],
-    'SUSPENSIÓN': ['Equipo inclinado', 'Pérdida de nitrógeno/aceite', 'Hojas de muelle fracturadas', 'Soportes (pernos) sueltos o rotos'],
+    'SUSPENSIÓN': ['amortiguadores dañados', 'bolsas de aire en mal estado', 'Pérdida de nitrógeno/aceite', 'Hojas de muelle fracturadas', 'Soportes (pernos) sueltos o rotos'],
     'ELÉCTRICO': ['Sulfatación', 'Falta de carga', 'Cortocircuito en arnés', 'Lecturas erróneas en panel (check engine)', 'Luces inoperativas'],
-    'NEUMÁTICO': ['Agua en el sistema', 'Carga lenta de tanques', 'Fugas audibles en válvulas relé', 'Diafragmas de pulmón rotos', 'Secador de aire'],
+    'NEUMÁTICO': ['fuga de aire en las cañerias', 'Carga lenta de tanques', 'Fugas audibles en válvulas relé', 'Diafragmas de pulmón rotos', 'Secador de aire'],
     'ESTRUCTURAL': ['Fisuras en soldadura', 'Deformación por sobrecarga', 'Pernos de anclaje de cabina rotos', 'Corrosión profunda'],
-    'TOLVA': ['Desgaste abrasivo de planchas', 'Deformación de compuerta', 'Trabas en el mecanismo de apertura', 'Abolladuras por impacto'],
+    'TOLVA': ['Desgaste abrasivo de planchas', 'mantenimiento general ', 'engrase engrase general en los puntos', 'Deformación de compuerta', 'Trabas en el mecanismo de apertura', 'Abolladuras por impacto'],
     'IMPLEMENTOS': ['Juego excesivo en el enganche', 'Falta de cierre de seguridad', 'Desgaste de bocinas', 'Falta de lubricación (engrase)'],
     'REFRIGERACIÓN': ['Recalentamiento del motor', 'Fugas de refrigerante', 'Aletas de radiador obstruidas', 'Ventilador inoperativo (falla de embrague)'],
     'SOLDADURA': ['Desprendimiento de cordón', 'Falta de penetración', 'Porosidad en la unión', 'Fisuras térmicas'],
     'CABINA': ['Fallas en controles (joysticks)', 'Aire acondicionado sin enfriamiento', 'Cristales rajados', 'Insonorización deficiente'],
+    'OTROS': ['otros'],
   };
   function actualizarAverias() {
     const comp = $('f-componente'); if (!comp) return;
@@ -3820,18 +3879,70 @@
   function addTrabajo() {
     if (!window._trabajos) window._trabajos = [];
     if (window._trabajos.length >= 12) { toast('⚠️ Máximo 12 ítems por OT', '#F5A623'); return; }
-    window._trabajos.push({ desc: '', cant: '', unidad: '', repuesto: '' });
+    window._trabajos.push({
+      desc: '',
+      repuestos: [
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' }
+      ]
+    });
     renderTrabajos();
   }
   function quitarTrabajo(i) {
     window._trabajos.splice(i, 1);
-    if (!window._trabajos.length) window._trabajos = [{ desc: '', cant: '', unidad: '', repuesto: '' }];
+    if (!window._trabajos.length) window._trabajos = [{
+      desc: '',
+      repuestos: [
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' },
+        { nombre: '', cant: '', unidad: '' }
+      ]
+    }];
     renderTrabajos();
   }
   function renderTrabajos() {
     const el = $('trabajos-list'); if (!el) return;
-    if (!window._trabajos || !window._trabajos.length) window._trabajos = [{ desc: '', cant: '', unidad: '', repuesto: '' }];
-    el.innerHTML = window._trabajos.map((t, i) => `
+    if (!window._trabajos || !window._trabajos.length) {
+      window._trabajos = [{
+        desc: '',
+        repuestos: [
+          { nombre: '', cant: '', unidad: '' },
+          { nombre: '', cant: '', unidad: '' },
+          { nombre: '', cant: '', unidad: '' },
+          { nombre: '', cant: '', unidad: '' },
+          { nombre: '', cant: '', unidad: '' }
+        ]
+      }];
+    }
+    el.innerHTML = window._trabajos.map((t, i) => {
+      // Migrar formato antiguo a nuevo
+      if (!t.repuestos || !Array.isArray(t.repuestos)) {
+        t.repuestos = [
+          { nombre: t.repuesto || '', cant: t.cant || '', unidad: t.unidad || '' },
+          { nombre: '', cant: '', unidad: '' },
+          { nombre: '', cant: '', unidad: '' },
+          { nombre: '', cant: '', unidad: '' },
+          { nombre: '', cant: '', unidad: '' }
+        ];
+      }
+      // Asegurar 5 repuestos con estructura completa
+      while (t.repuestos.length < 5) t.repuestos.push({ nombre: '', cant: '', unidad: '' });
+      t.repuestos.forEach(r => {
+        if (typeof r === 'string') {
+          const idx = t.repuestos.indexOf(r);
+          t.repuestos[idx] = { nombre: r, cant: '', unidad: '' };
+        }
+        if (!r.nombre) r.nombre = '';
+        if (!r.cant) r.cant = '';
+        if (!r.unidad) r.unidad = '';
+      });
+
+      return `
     <div style="background:var(--dark3);border:1px solid var(--bdr2);border-radius:10px;padding:10px 12px;margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <div style="display:flex;align-items:center;gap:8px;">
@@ -3842,26 +3953,32 @@
       </div>
       <textarea placeholder="Descripción del trabajo realizado..." rows="2" style="width:100%;background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.85rem;resize:vertical;box-sizing:border-box;"
         oninput="window._trabajos[${i}].desc=this.value">${t.desc || ''}</textarea>
-      <div style="display:grid;grid-template-columns:80px 100px 1fr;gap:6px;margin-top:6px;">
-        <input type="number" placeholder="Cant." min="0" style="background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.85rem;"
-          value="${t.cant || ''}" oninput="window._trabajos[${i}].cant=this.value">
-        <select style="background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.82rem;"
-          onchange="window._trabajos[${i}].unidad=this.value">
-          <option value="" ${!t.unidad ? 'selected' : ''}>Unidad</option>
-          <option value="UND" ${t.unidad==='UND' ? 'selected' : ''}>UND</option>
-          <option value="GAL" ${t.unidad==='GAL' ? 'selected' : ''}>GAL</option>
-          <option value="LT" ${t.unidad==='LT' ? 'selected' : ''}>LT</option>
-          <option value="KG" ${t.unidad==='KG' ? 'selected' : ''}>KG</option>
-          <option value="MT" ${t.unidad==='MT' ? 'selected' : ''}>MT</option>
-          <option value="JGO" ${t.unidad==='JGO' ? 'selected' : ''}>JGO</option>
-          <option value="KIT" ${t.unidad==='KIT' ? 'selected' : ''}>KIT</option>
-          <option value="PAR" ${t.unidad==='PAR' ? 'selected' : ''}>PAR</option>
-          <option value="HRS" ${t.unidad==='HRS' ? 'selected' : ''}>HRS</option>
-        </select>
-        <input type="text" placeholder="Repuesto / Artículo / Insumo" style="background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.85rem;"
-          value="${t.repuesto || ''}" oninput="window._trabajos[${i}].repuesto=this.value">
-      </div>
-    </div>`).join('');
+      
+      <div style="margin-top:8px;font-size:0.75rem;color:var(--mut);font-weight:600;margin-bottom:4px;">📦 Repuestos / Insumos:</div>
+      
+      ${[0, 1, 2, 3, 4].map(r => `
+        <div style="display:grid;grid-template-columns:70px 90px 1fr;gap:6px;margin-bottom:6px;">
+          <input type="number" placeholder="Cant." min="0" style="background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.85rem;"
+            value="${t.repuestos[r].cant || ''}" oninput="window._trabajos[${i}].repuestos[${r}].cant=this.value">
+          <select style="background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.82rem;"
+            onchange="window._trabajos[${i}].repuestos[${r}].unidad=this.value">
+            <option value="" ${!t.repuestos[r].unidad ? 'selected' : ''}>Unidad</option>
+            <option value="UND" ${t.repuestos[r].unidad === 'UND' ? 'selected' : ''}>UND</option>
+            <option value="GAL" ${t.repuestos[r].unidad === 'GAL' ? 'selected' : ''}>GAL</option>
+            <option value="LT" ${t.repuestos[r].unidad === 'LT' ? 'selected' : ''}>LT</option>
+            <option value="KG" ${t.repuestos[r].unidad === 'KG' ? 'selected' : ''}>KG</option>
+            <option value="MT" ${t.repuestos[r].unidad === 'MT' ? 'selected' : ''}>MT</option>
+            <option value="JGO" ${t.repuestos[r].unidad === 'JGO' ? 'selected' : ''}>JGO</option>
+            <option value="KIT" ${t.repuestos[r].unidad === 'KIT' ? 'selected' : ''}>KIT</option>
+            <option value="PAR" ${t.repuestos[r].unidad === 'PAR' ? 'selected' : ''}>PAR</option>
+            <option value="HRS" ${t.repuestos[r].unidad === 'HRS' ? 'selected' : ''}>HRS</option>
+          </select>
+          <input type="text" placeholder="Repuesto ${r + 1}" style="background:var(--dark4);border:1px solid var(--bdr2);border-radius:8px;padding:8px;color:var(--txt);font-family:'Barlow',sans-serif;font-size:0.85rem;"
+            value="${t.repuestos[r].nombre || ''}" oninput="window._trabajos[${i}].repuestos[${r}].nombre=this.value">
+        </div>
+      `).join('')}
+    </div>`;
+    }).join('');
   }
 
   // ── Imprimir en blanco ──
@@ -3886,11 +4003,11 @@
     const av = ($('f-averia') ? $('f-averia').value : '') || ($('f-av') ? $('f-av').value.trim() : '');
     const mecs = (_mecsList && _mecsList.length) ? _mecsList : _mecs.filter(m => m.trim());
     const get = (id, def = '') => { const e = $(id); return e ? e.value : def; };
-    
+
     // ══════════════════════════════════════════════════════════
     // VALIDACIONES OBLIGATORIAS - PANEL MECÁNICOS
     // ══════════════════════════════════════════════════════════
-    
+
     // TAB EQUIPO - TODOS LOS CAMPOS OBLIGATORIOS
     if (!tipo) { toast('⚠️ Campo OBLIGATORIO: Tipo de OT', '#FF6B6B'); switchTab('equipo'); return; }
     if (tipo === 'MP' && !get('f-smp')) { toast('⚠️ Campo OBLIGATORIO: Subtipo de MP', '#FF6B6B'); switchTab('equipo'); return; }
@@ -3921,7 +4038,7 @@
     if (!tieneTrabajo) { toast('⚠️ Campo OBLIGATORIO: Ingresa al menos un trabajo realizado', '#FF6B6B'); switchTab('trabajos'); return; }
     if (!get('f-obs').trim()) { toast('⚠️ Campo OBLIGATORIO: Observaciones', '#FF6B6B'); switchTab('trabajos'); return; }
     if (!get('f-est')) { toast('⚠️ Campo OBLIGATORIO: Estado', '#FF6B6B'); switchTab('trabajos'); return; }
-    
+
     const now = new Date();
     const datos = {
       tipoOT: tipo, subtipoMP: get('f-smp'), linea, equipo,
@@ -3941,19 +4058,19 @@
 
     showL(_editId ? 'Actualizando...' : 'Generando OT...');
     let ok = false;
-    
+
     try {
       if (_editId) {
         // Encontrar codigo de OT existente para no sobreescribirlo accidentalmente vacío
-        const codigoExistente = (window._hisOTs || []).find(o => o.id === _editId)?.codigo || 
-                                (window._todasLasOT || []).find(o => o.id === _editId)?.codigo;
+        const codigoExistente = (window._hisOTs || []).find(o => o.id === _editId)?.codigo ||
+          (window._todasLasOT || []).find(o => o.id === _editId)?.codigo;
         if (codigoExistente) datos.codigo = codigoExistente;
-        
+
         await db.collection('ordenes_trabajo').doc(_editId).update(datos);
         ok = true;
       } else {
         const refConfig = db.collection('config').doc('correlativo');
-        
+
         await db.runTransaction(async (t) => {
           const doc = await t.get(refConfig);
           let nextId = 1;
@@ -3961,16 +4078,16 @@
             nextId = (doc.data().ot || 0) + 1;
           }
           t.set(refConfig, { ot: nextId }, { merge: true });
-          
+
           const nuevoCodigo = `OT-${now.getFullYear()}-${nextId}`;
-          
+
           datos.codigo = nuevoCodigo;
           const newDocRef = db.collection('ordenes_trabajo').doc();
           t.set(newDocRef, { ...datos, creadoEn: firebase.firestore.FieldValue.serverTimestamp() });
         });
         ok = true;
       }
-    } catch(err) {
+    } catch (err) {
       console.error("Error guardarOT transaccion", err);
       ok = false;
     }
@@ -4994,20 +5111,20 @@
   <style>
     @page {
       size: A4 portrait;
-      margin: 8mm 8mm 8mm 8mm;
+      margin: 6mm 6mm 6mm 6mm;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: Arial, sans-serif;
-      font-size: 8.5pt;
-      line-height: 1.3;
+      font-size: 7pt;
+      line-height: 1.2;
       color: #000;
     }
 
     /* ── ENCABEZADO ── */
     .header {
       display: grid;
-      grid-template-columns: 90px 1fr 160px;
+      grid-template-columns: 75px 1fr 145px;
       border: 2px solid #000;
       margin-bottom: 0;
     }
@@ -5017,33 +5134,33 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 6px;
-      font-size: 7pt;
+      padding: 4px;
+      font-size: 6pt;
       font-weight: bold;
       text-align: center;
-      gap: 3px;
+      gap: 2px;
     }
     .header-logo img {
-      width: 52px;
-      height: 52px;
+      width: 45px;
+      height: 45px;
       object-fit: contain;
     }
     .header-center {
       border-right: 2px solid #000;
       text-align: center;
-      padding: 8px 6px;
+      padding: 6px 4px;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
     .header-center h1 {
-      font-size: 15pt;
+      font-size: 13pt;
       font-weight: 900;
-      letter-spacing: 1px;
-      margin-bottom: 2px;
+      letter-spacing: 0.8px;
+      margin-bottom: 1px;
     }
     .header-center p {
-      font-size: 9pt;
+      font-size: 8pt;
       font-weight: 600;
     }
     .header-right {
@@ -5051,29 +5168,29 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 6px;
-      gap: 4px;
+      padding: 4px;
+      gap: 3px;
     }
     .ot-label {
-      font-size: 7.5pt;
+      font-size: 6.5pt;
       text-align: center;
     }
     .ot-numero {
-      font-size: 14pt;
+      font-size: 12pt;
       font-weight: 900;
-      border: 2.5px solid #000;
-      padding: 4px 8px;
-      letter-spacing: 1px;
+      border: 2px solid #000;
+      padding: 3px 6px;
+      letter-spacing: 0.8px;
       text-align: center;
     }
     .ot-fecha {
-      font-size: 7pt;
+      font-size: 6pt;
       text-align: center;
     }
     .ot-fecha input-line {
       display: inline-block;
       border-bottom: 1px solid #000;
-      min-width: 80px;
+      min-width: 70px;
     }
 
     /* ── SECCIONES ── */
@@ -5084,21 +5201,21 @@
     .section-header {
       background: #1a1a1a;
       color: #fff;
-      padding: 3px 8px;
+      padding: 2px 6px;
       font-weight: 700;
-      font-size: 8pt;
-      letter-spacing: 0.5px;
+      font-size: 7pt;
+      letter-spacing: 0.3px;
       text-transform: uppercase;
     }
     .section-body {
-      padding: 6px 8px;
+      padding: 4px 6px;
     }
 
     /* ── CAMPOS ── */
     .row {
       display: grid;
-      gap: 0 10px;
-      margin-bottom: 5px;
+      gap: 0 8px;
+      margin-bottom: 3px;
     }
     .row-2  { grid-template-columns: 1fr 1fr; }
     .row-3  { grid-template-columns: 1fr 1fr 1fr; }
@@ -5109,46 +5226,46 @@
 
     .field { }
     .field-label {
-      font-size: 6.5pt;
+      font-size: 6pt;
       font-weight: 700;
       text-transform: uppercase;
       color: #333;
       margin-bottom: 1px;
     }
     .field-value {
-      border-bottom: 1.2px solid #000;
-      padding: 1px 3px;
-      min-height: 16px;
-      font-size: 8.5pt;
+      border-bottom: 1px solid #000;
+      padding: 1px 2px;
+      min-height: 14px;
+      font-size: 7pt;
     }
 
     /* ── CHECKBOXES ── */
     .checkbox-section {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 3px 6px;
-      margin-top: 4px;
+      gap: 2px 4px;
+      margin-top: 3px;
     }
     .checkbox-item {
-      font-size: 7.5pt;
+      font-size: 6.5pt;
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
     }
-    .chk { font-size: 9pt; }
+    .chk { font-size: 8pt; }
 
     /* Estado equipo / OT checkboxes en línea */
     .status-checks {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
-      margin-top: 3px;
+      margin-top: 2px;
     }
     .status-check-item {
-      font-size: 7.5pt;
+      font-size: 6.5pt;
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
     }
 
     /* ── SECCIÓN II — ANÁLISIS DE FALLA ── */
@@ -5171,42 +5288,42 @@
     }
     .two-col-left .section-body,
     .two-col-right .section-body {
-      padding: 6px 8px;
+      padding: 4px 6px;
     }
 
     /* ── TABLA TRABAJOS ── */
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 4px;
+      margin-top: 2px;
     }
     table th {
       background: #1a1a1a;
       color: #fff;
-      padding: 3px 5px;
-      font-size: 7.5pt;
+      padding: 2px 3px;
+      font-size: 6.5pt;
       font-weight: 700;
       border: 1px solid #000;
       text-align: center;
     }
     table td {
       border: 1px solid #000;
-      padding: 3px 5px;
-      font-size: 8pt;
-      min-height: 18px;
+      padding: 2px 3px;
+      font-size: 6.5pt;
+      min-height: 14px;
       vertical-align: top;
     }
-    .td-num { text-align: center; width: 28px; }
-    .td-cant { text-align: center; width: 60px; }
-    .td-rep { width: 100px; }
+    .td-num { text-align: center; width: 24px; }
+    .td-cant { text-align: center; width: 50px; }
+    .td-rep { width: 90px; }
 
     /* ── OBSERVACIONES ── */
     .obs-box {
       border: 1px solid #000;
-      min-height: 45px;
-      padding: 5px;
-      margin-top: 4px;
-      font-size: 8pt;
+      min-height: 32px;
+      padding: 3px;
+      margin-top: 2px;
+      font-size: 6.5pt;
     }
 
     /* ── FIRMAS ── */
@@ -5219,43 +5336,43 @@
       grid-template-columns: 1fr 1fr 1fr;
     }
     .firma-col {
-      padding: 10px 12px 8px;
+      padding: 6px 8px 5px;
       text-align: center;
     }
     .firma-col:not(:last-child) {
       border-right: 1px solid #000;
     }
     .firma-label {
-      font-size: 7pt;
+      font-size: 6pt;
       font-weight: 700;
       text-transform: uppercase;
-      margin-bottom: 35px;
+      margin-bottom: 28px;
     }
     .firma-img {
-      height: 45px;
+      height: 38px;
       max-width: 100%;
       object-fit: contain;
       border-bottom: 1.5px solid #000;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
     .firma-linea {
       border-top: 1.5px solid #000;
-      padding-top: 3px;
-      font-size: 7pt;
+      padding-top: 2px;
+      font-size: 6pt;
     }
     .firma-nombre {
-      font-size: 7pt;
-      margin-top: 2px;
+      font-size: 6pt;
+      margin-top: 1px;
     }
 
     /* ── FOOTER ── */
     .footer {
       text-align: center;
-      padding: 4px;
-      font-size: 6.5pt;
+      padding: 3px;
+      font-size: 5.5pt;
       color: #555;
       border-top: 1px solid #ccc;
-      margin-top: 6px;
+      margin-top: 4px;
     }
 
     @media print {
@@ -5269,23 +5386,7 @@
   <!-- ═══ ENCABEZADO ═══ -->
   <div class="header">
     <div class="header-logo">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60" width="75" height="45">
-        <rect width="100" height="60" rx="8" fill="#0D1117"/>
-        <!-- Engranaje -->
-        <circle cx="35" cy="30" r="15" fill="none" stroke="#F5A623" stroke-width="5"/>
-        <circle cx="35" cy="30" r="7"  fill="none" stroke="#F5A623" stroke-width="3"/>
-        <!-- Dientes engranaje -->
-        <rect x="32" y="10" width="6" height="7" rx="1" fill="#F5A623"/>
-        <rect x="32" y="43" width="6" height="7" rx="1" fill="#F5A623"/>
-        <rect x="14" y="27" width="7" height="6" rx="1" fill="#F5A623"/>
-        <rect x="49" y="27" width="7" height="6" rx="1" fill="#F5A623"/>
-        <!-- Llave inglesa -->
-        <path d="M38 32 L52 46" stroke="#F5A623" stroke-width="3.5" stroke-linecap="round"/>
-        <circle cx="36" cy="30" r="4" fill="#F5A623"/>
-        <!-- Texto ECOSEM -->
-        <text x="62" y="24" font-family="Arial" font-weight="900" font-size="10" fill="#F5A623">ECO</text>
-        <text x="62" y="38" font-family="Arial" font-weight="900" font-size="10" fill="#888">SEM</text>
-      </svg>
+      <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCACDAMsDASIAAhEBAxEB/8QAHAABAAIDAQEBAAAAAAAAAAAAAAcIBAUGAwIB/8QASRAAAQMDBAAEBAQBBQoPAAAAAQIDBAAFEQYHEiEIEzFBFCJRYRUycYEjFjNCkaEJFyRDUrGzweHwGCc0ODlkZXN0dXaytMPR/8QAGwEBAAIDAQEAAAAAAAAAAAAAAAUGAwQHAgH/xAAsEQACAQMDAwMEAgMBAAAAAAAAAQIDBBEFITESQVEGYXETIoGRseEHFBUy/9oADAMBAAIRAxEAPwCqVKUoBSlKAUpSgFKUoBSlddofTL+o7giOyUp9VKKjhKUjGST7D1NAc6lt1SCpKFFPuQOhXvGiPPuBASQT6D3P+/VTezaNF6djiPCj
       <div style="font-size:6.5pt; font-weight:700; margin-top:1px;">ECOSEM HUARAUCACA</div>
     </div>
     <div class="header-center">
@@ -5472,7 +5573,7 @@
           </tr>
         </thead>
         <tbody>
-          ${ECOSEM_FILAS_OT(otData.trabajos || otData.descripcion, 12)}
+          ${ECOSEM_FILAS_OT(otData.trabajos || otData.descripcion, 8)}
         </tbody>
       </table>
     </div>
@@ -5585,12 +5686,32 @@
 
     if (Array.isArray(trabajos) && trabajos.length > 0) {
       trabajos.forEach((t, i) => {
+        // Concatenar repuestos con cantidades y unidades
+        let repuestosStr = '';
+        if (Array.isArray(t.repuestos)) {
+          const repuestosConDatos = t.repuestos.filter(r => {
+            if (typeof r === 'string') return r.trim();
+            return r && (r.nombre || r.repuesto);
+          }).map(r => {
+            if (typeof r === 'string') return r;
+            const nombre = r.nombre || r.repuesto || '';
+            const cant = r.cant || r.cantidad || '';
+            const unidad = r.unidad || '';
+            if (cant && unidad) return `${cant} ${unidad} ${nombre}`;
+            if (cant) return `${cant} ${nombre}`;
+            return nombre;
+          });
+          repuestosStr = repuestosConDatos.join(' | ');
+        } else {
+          repuestosStr = t.repuesto || t.articulo || '';
+        }
+
         filas += `<tr>
         <td class="td-num">${i + 1}</td>
         <td>${t.desc || t.descripcion || t.trabajo || (typeof t === 'string' ? t : '') || ''}</td>
-        <td class="td-cant">${t.cant || t.cantidad || ''}</td>
-        <td style="text-align:center;width:48px;font-size:7.5pt;">${t.unidad || ''}</td>
-        <td class="td-rep">${t.repuesto || t.articulo || ''}</td>
+        <td class="td-cant"></td>
+        <td style="text-align:center;width:48px;font-size:7.5pt;"></td>
+        <td class="td-rep">${repuestosStr}</td>
       </tr>`;
       });
       const restantes = totalFilas - trabajos.length;
@@ -5711,7 +5832,7 @@
   }
 
   // Exponer al scope global para que los onclick funcionen desde HTML dinámico
-  window.ECOSEM_PRINT_V2  = ECOSEM_PRINT_V2;
+  window.ECOSEM_PRINT_V2 = ECOSEM_PRINT_V2;
   window.ECOSEM_RENDER_OT = ECOSEM_RENDER_OT;
 
 
@@ -6334,455 +6455,3 @@
   console.log('✅ Sistema de firma digital cargado');
 
 </script>
-
-
-  // ── EXPORTAR DASHBOARD A EXCEL PROFESIONAL - ECOSEM ──
-
-  async function exportarDashboardExcel() {
-    showL('Generando Dashboard Excel...');
-
-    try {
-      const snapshot = await db.collection('ordenes_trabajo').orderBy('fecha', 'desc').get();
-      const ots = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          fecha: data.fecha?.toDate ? data.fecha.toDate() : new Date(data.fecha)
-        };
-      });
-
-      if (ots.length === 0) {
-        hideL();
-        toast('⚠️ No hay órdenes de trabajo registradas', '#F5A623');
-        return;
-      }
-
-      const wb = XLSX.utils.book_new();
-      const fechaExport = new Date().toLocaleString('es-PE', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
-      });
-
-      // ── CONTEOS CORREGIDOS (estados reales de Firebase) ──
-      const total = ots.length;
-      const ejecutadas = ots.filter(o => o.estado === 'EJECUTADA').length;
-      const programadas = ots.filter(o => o.estado === 'PROGRAMADA').length;
-      const pendientes = ots.filter(o => o.estado === 'PENDIENTE').length;
-      const anuladas = ots.filter(o => o.estado === 'ANULADA').length;
-      const backlog = pendientes + programadas;
-      const tasaCierre = total > 0 ? ((ejecutadas / total) * 100).toFixed(1) : '0.0';
-      const semaforo = parseFloat(tasaCierre) >= 85 ? '🟢 OK — META CUMPLIDA'
-        : parseFloat(tasaCierre) >= 70 ? '🟡 AMARILLO — ATENCIÓN'
-          : '🔴 CRÍTICO — BAJO META';
-
-      // ══ HOJA 1: PORTADA ══
-      const wsPortada = XLSX.utils.aoa_to_sheet([
-        ['ECOSEM HUARAUCACA', ''],
-        ['DEPARTAMENTO DE MANTENIMIENTO — LÍNEA BLANCA', ''],
-        ['', ''],
-        ['REPORTE DE ÓRDENES DE TRABAJO', ''],
-        ['Fecha de exportación:', fechaExport],
-        ['', ''],
-        ['── RESUMEN GENERAL ──', ''],
-        ['Total OTs:', total],
-        ['Ejecutadas:', ejecutadas],
-        ['Programadas:', programadas],
-        ['Pendientes:', pendientes],
-        ['Anuladas:', anuladas],
-        ['', ''],
-        ['── KPI SAP PM ──', ''],
-        ['Backlog activo (sin cerrar):', backlog],
-        ['Tasa de cierre:', tasaCierre + '%'],
-        ['Meta SAP PM:', '≥ 85%'],
-        ['Semáforo:', semaforo],
-        ['', ''],
-        ['── PERÍODO ──', ''],
-        ['Desde:', obtenerFechaMin(ots)],
-        ['Hasta:', obtenerFechaMax(ots)],
-        ['', ''],
-        ['── FLOTA ──', ''],
-        ['Equipos Intervenidos:', contarEquiposUnicos(ots)],
-        ['Mecánicos Activos:', contarMecanicosActivos(ots)],
-        ['', ''],
-        ['Exportado por:', window._usuarioActual?.nombre || 'USUARIO']
-      ]);
-      wsPortada['!cols'] = [{ wch: 40 }, { wch: 32 }];
-      XLSX.utils.book_append_sheet(wb, wsPortada, 'PORTADA');
-
-      // ══ HOJA 2: KPIs ══
-      const mpCount = ots.filter(o => (o.tipoOT || o.tipo) === 'MP').length;
-      const mcpCount = ots.filter(o => (o.tipoOT || o.tipo) === 'MCP').length;
-      const mceCount = ots.filter(o => (o.tipoOT || o.tipo) === 'MCE').length;
-      const pct = n => total > 0 ? ((n / total) * 100).toFixed(1) + '%' : '0.0%';
-
-      const wsKPIs = XLSX.utils.aoa_to_sheet([
-        ['ECOSEM HUARAUCACA — PANEL DE KPIs', '', ''],
-        ['Línea Blanca — Departamento de Mantenimiento', '', ''],
-        ['Generado:', fechaExport, ''],
-        ['', '', ''],
-        ['═══════════════════════════════════════', '', ''],
-        ['KPI 1: RESUMEN DE ESTADOS', '', ''],
-        ['═══════════════════════════════════════', '', ''],
-        ['ESTADO', 'CANTIDAD', '% DEL TOTAL'],
-        ['EJECUTADA', ejecutadas, pct(ejecutadas)],
-        ['PROGRAMADA', programadas, pct(programadas)],
-        ['PENDIENTE', pendientes, pct(pendientes)],
-        ['ANULADA', anuladas, pct(anuladas)],
-        ['TOTAL', total, '100.0%'],
-        ['', '', ''],
-        ['═══════════════════════════════════════', '', ''],
-        ['KPI 2: BACKLOG SAP PM', '', ''],
-        ['═══════════════════════════════════════', '', ''],
-        ['Backlog activo (Pendientes + Programadas):', backlog, ''],
-        ['OTs cerradas (Ejecutadas):', ejecutadas, ''],
-        ['', '', ''],
-        ['═══════════════════════════════════════', '', ''],
-        ['KPI 3: TIPOS DE MANTENIMIENTO', '', ''],
-        ['═══════════════════════════════════════', '', ''],
-        ['TIPO', 'CANTIDAD', '% DEL TOTAL'],
-        ['MP (Preventivo)', mpCount, pct(mpCount)],
-        ['MCP (Correctivo Programado)', mcpCount, pct(mcpCount)],
-        ['MCE (Correctivo Emergencia)', mceCount, pct(mceCount)],
-        ['TOTAL', total, '100.0%'],
-        ['', '', ''],
-        ['═══════════════════════════════════════', '', ''],
-        ['KPI 4: RENDIMIENTO OPERACIONAL', '', ''],
-        ['═══════════════════════════════════════', '', ''],
-        ['MÉTRICA', 'VALOR', 'META'],
-        ['Tasa de Cierre', tasaCierre + '%', '≥ 85%'],
-        ['Equipos Intervenidos', contarEquiposUnicos(ots), ''],
-        ['Mecánicos Activos', contarMecanicosActivos(ots), ''],
-        ['Promedio OTs/Día', (total / 30).toFixed(1), ''],
-        ['Semáforo', semaforo, '']
-      ]);
-      wsKPIs['!cols'] = [{ wch: 38 }, { wch: 15 }, { wch: 15 }];
-      XLSX.utils.book_append_sheet(wb, wsKPIs, 'KPIs');
-
-      // ══ HOJA 3: TOP EQUIPOS ══
-      const topEquipos = calcularTopEquipos(ots);
-      const topEquiposData = [
-        ['ECOSEM HUARAUCACA — TOP EQUIPOS CON MÁS FALLAS', '', '', '', '', '', ''],
-        ['Línea Blanca — Generado: ' + fechaExport, '', '', '', '', '', ''],
-        ['', '', '', '', '', '', ''],
-        ['#', 'UNIDAD / EQUIPO', 'PLACA', 'FALLAS', '% TOTAL', 'ÚLTIMO SISTEMA', 'ÚLTIMA AVERÍA']
-      ];
-      topEquipos.forEach((eq, idx) => {
-        topEquiposData.push([
-          idx + 1, eq.unidad || '', eq.placa, eq.total,
-          pct(eq.total), eq.ultimo_sistema, eq.ultima_averia
-        ]);
-      });
-      const wsTop = XLSX.utils.aoa_to_sheet(topEquiposData);
-      wsTop['!cols'] = [{ wch: 5 }, { wch: 18 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 18 }, { wch: 35 }];
-      XLSX.utils.book_append_sheet(wb, wsTop, 'TOP EQUIPOS');
-
-      // ══ HOJA 4: OTs POR MECÁNICO ══
-      const otsMecanico = calcularOTsPorMecanico(ots);
-      const mecData = [
-        ['ECOSEM HUARAUCACA — OTs POR MECÁNICO', '', '', '', '', '', '', ''],
-        ['Línea Blanca — Generado: ' + fechaExport, '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['#', 'MECÁNICO', 'TOTAL OTs', 'EJECUTADAS', 'PENDIENTES', 'PROGRAMADAS', 'ANULADAS', '% CIERRE']
-      ];
-      otsMecanico.forEach((mec, idx) => {
-        mecData.push([
-          idx + 1, mec.nombre, mec.total, mec.ejecutadas,
-          mec.pendientes, mec.programadas, mec.anuladas || 0, mec.pct_cierre + '%'
-        ]);
-      });
-      const wsMec = XLSX.utils.aoa_to_sheet(mecData);
-      wsMec['!cols'] = [{ wch: 5 }, { wch: 35 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 12 }];
-      XLSX.utils.book_append_sheet(wb, wsMec, 'OTs POR MECÁNICO');
-
-      // ══ HOJA 5: BASE_DATOS ══
-      const baseDatos = ots.map(ot => {
-        // Mecánico — lee array o string igual que el sistema de impresión
-        const mecStr = Array.isArray(ot.mecanicos) && ot.mecanicos.length
-          ? ot.mecanicos.join(' / ')
-          : (ot.mecanicoPrincipal || ot.mecanico || '');
-
-        // Tiempo parada
-        let tParada = ot.tiempoParada || ot.tiempoAtencion || '';
-        if (!tParada && ot.fechaInicio && ot.fechaFin) {
-          try {
-            const ms = new Date(ot.fechaFin + 'T' + (ot.horaFin || '00:00'))
-              - new Date(ot.fechaInicio + 'T' + (ot.horaInicio || '00:00'));
-            if (ms > 0) tParada = (ms / 3600000).toFixed(2);
-          } catch (e) { }
-        }
-
-        // Estado normalizado
-        const estadoNorm = ot.estado === 'EJECUTADA' ? 'EJECUTADA'
-          : ot.estado === 'PROGRAMADA' ? 'PROGRAMADA'
-            : ot.estado === 'ANULADA' ? 'ANULADA'
-              : 'PENDIENTE';
-
-        // Trabajos — array de {desc/descripcion, cant/cantidad, repuesto}
-        const trabajos = Array.isArray(ot.trabajos) ? ot.trabajos : [];
-        const tw = i => trabajos[i] || {};
-
-        return {
-          'CODIGO': ot.codigo || ot.id,
-          'FECHA': ot.fecha instanceof Date ? ot.fecha.toLocaleDateString('es-PE') : '',
-          'PARADA': ot.parada || 'EQUIPO OPERATIVO',
-          'TIPO OT': ot.tipoOT || ot.tipo || '',
-          'PLAN PM': ot.planPM || '',
-          'ESTADO': estadoNorm,
-          'UNIDAD': ot.unidad || '',
-          'PLACA': ot.placa || '',
-          'EQUIPO': ot.equipo || ot.unidad || '',
-          'MARCA': ot.marca || '',
-          'MODELO': ot.modelo || '',
-          'N° MOTOR': ot.nMotor || ot.numeroMotor || '',
-          'CARRETA': ot.carreta || '',
-          'AREA': ot.linea || ot.area || 'TRANSPORTE LOGÍSTICO',
-          'KM': ot.km || ot.kilometraje || '',
-          'HORAS': ot.horas || ot.horometro || '',
-          'OPERADOR': ot.operador || ot.conductor || '',
-          'MECANICO': mecStr,
-          'SISTEMA': ot.sistema || '',
-          'COMPONENTE': ot.componente || '',
-          'AVERIA': ot.averia || '',
-          'CAUSA': ot.causa || '',
-          'OBJETO': ot.objeto || '',
-          'FECHA INICIAL': ot.fechaInicio || ot.fechaInicial || '',
-          'HORA INICIAL': ot.horaInicio || ot.horaInicial || '',
-          'FECHA FINAL': ot.fechaFin || ot.fechaFinal || '',
-          'HORA FINAL': ot.horaFin || ot.horaFinal || '',
-          'T.PARADA': tParada,
-          'OBSERVACION': ot.observaciones || ot.observacion || '',
-          'DESC.TRABAJO 1': tw(0).desc || tw(0).descripcion || '',
-          'CANTIDAD 1': tw(0).cant || tw(0).cantidad || '',
-          'REPUESTO 1': tw(0).repuesto || '',
-          'DESC.TRABAJO 2': tw(1).desc || tw(1).descripcion || '',
-          'CANTIDAD 2': tw(1).cant || tw(1).cantidad || '',
-          'REPUESTO 2': tw(1).repuesto || '',
-          'DESC.TRABAJO 3': tw(2).desc || tw(2).descripcion || '',
-          'CANTIDAD 3': tw(2).cant || tw(2).cantidad || '',
-          'REPUESTO 3': tw(2).repuesto || '',
-          'DESC.TRABAJO 4': tw(3).desc || tw(3).descripcion || '',
-          'CANTIDAD 4': tw(3).cant || tw(3).cantidad || '',
-          'REPUESTO 4': tw(3).repuesto || '',
-          'DESC.TRABAJO 5': tw(4).desc || tw(4).descripcion || '',
-          'CANTIDAD 5': tw(4).cant || tw(4).cantidad || '',
-          'REPUESTO 5': tw(4).repuesto || '',
-          'DESC.TRABAJO 6': tw(5).desc || tw(5).descripcion || '',
-          'CANTIDAD 6': tw(5).cant || tw(5).cantidad || '',
-          'REPUESTO 6': tw(5).repuesto || '',
-          'DESC.TRABAJO 7': tw(6).desc || tw(6).descripcion || '',
-          'CANTIDAD 7': tw(6).cant || tw(6).cantidad || '',
-          'REPUESTO 7': tw(6).repuesto || '',
-          'DESC.TRABAJO 8': tw(7).desc || tw(7).descripcion || '',
-          'CANTIDAD 8': tw(7).cant || tw(7).cantidad || '',
-          'REPUESTO 8': tw(7).repuesto || '',
-          'DESC.TRABAJO 9': tw(8).desc || tw(8).descripcion || '',
-          'CANTIDAD 9': tw(8).cant || tw(8).cantidad || '',
-          'REPUESTO 9': tw(8).repuesto || '',
-          'DESC.TRABAJO 10': tw(9).desc || tw(9).descripcion || '',
-          'CANTIDAD 10': tw(9).cant || tw(9).cantidad || '',
-          'REPUESTO 10': tw(9).repuesto || ''
-        };
-      });
-      const wsBase = XLSX.utils.json_to_sheet(baseDatos);
-      XLSX.utils.book_append_sheet(wb, wsBase, 'BASE_DATOS');
-
-      // ── DESCARGAR ──
-      const fechaFile = new Date().toISOString().split('T')[0];
-      XLSX.writeFile(wb, `OT_ECOSEM_${fechaFile}.xlsx`);
-      hideL();
-      toast('✅ Dashboard exportado exitosamente', '#30D158');
-
-    } catch (error) {
-      hideL();
-      console.error('Error exportando dashboard:', error);
-      toast('❌ Error al exportar: ' + error.message, '#FF3B30');
-    }
-  }
-
-  // ── FUNCIONES AUXILIARES ──
-
-  function calcularTopEquipos(ots) {
-    const equipos = {};
-    ots.forEach(ot => {
-      const placa = ot.placa;
-      if (!placa) return;
-      if (!equipos[placa]) {
-        equipos[placa] = {
-          placa, unidad: ot.unidad || '', total: 0,
-          ultimo_sistema: '', ultima_averia: '', ultima_fecha: null
-        };
-      }
-      equipos[placa].total++;
-      if (!equipos[placa].ultima_fecha || ot.fecha > equipos[placa].ultima_fecha) {
-        equipos[placa].ultima_fecha = ot.fecha;
-        equipos[placa].unidad = ot.unidad || equipos[placa].unidad;
-        equipos[placa].ultimo_sistema = ot.sistema || '';
-        equipos[placa].ultima_averia = ot.averia || '';
-      }
-    });
-    return Object.values(equipos).sort((a, b) => b.total - a.total).slice(0, 15);
-  }
-
-  function calcularOTsPorMecanico(ots) {
-    const mecs = {};
-    ots.forEach(ot => {
-      // Lee array o string igual que impresión
-      const nombres = Array.isArray(ot.mecanicos) && ot.mecanicos.length
-        ? ot.mecanicos
-        : [(ot.mecanicoPrincipal || ot.mecanico || '')].filter(Boolean);
-      nombres.forEach(mec => {
-        if (!mec) return;
-        if (!mecs[mec]) mecs[mec] = { nombre: mec, total: 0, ejecutadas: 0, programadas: 0, pendientes: 0, anuladas: 0 };
-        mecs[mec].total++;
-        if (ot.estado === 'EJECUTADA') mecs[mec].ejecutadas++;
-        else if (ot.estado === 'PROGRAMADA') mecs[mec].programadas++;
-        else if (ot.estado === 'PENDIENTE') mecs[mec].pendientes++;
-        else if (ot.estado === 'ANULADA') mecs[mec].anuladas++;
-      });
-    });
-    return Object.values(mecs)
-      .map(m => ({ ...m, pct_cierre: m.total > 0 ? ((m.ejecutadas / m.total) * 100).toFixed(1) : '0.0' }))
-      .sort((a, b) => b.total - a.total);
-  }
-
-  function contarEquiposUnicos(ots) {
-    const s = new Set();
-    ots.forEach(ot => { if (ot.placa) s.add(ot.placa); });
-    return s.size;
-  }
-
-  function contarMecanicosActivos(ots) {
-    const s = new Set();
-    ots.forEach(ot => { if (ot.mecanico) s.add(ot.mecanico); });
-    return s.size;
-  }
-
-  function obtenerFechaMin(ots) {
-    const min = new Date(Math.min(...ots.map(o => o.fecha.getTime())));
-    return min.toLocaleDateString('es-PE');
-  }
-
-  function obtenerFechaMax(ots) {
-    const max = new Date(Math.max(...ots.map(o => o.fecha.getTime())));
-    return max.toLocaleDateString('es-PE');
-  }
-
-  console.log('✅ Sistema de exportación Dashboard Excel cargado');
-
-  // ══════════════════════════════════════════════════════════════════════
-  // VERIFICACIÓN DE CARGA DE SCRIPTS Y MÓDULOS EXTERNOS
-  // ══════════════════════════════════════════════════════════════════════
-  
-  setTimeout(function() {
-    console.log('');
-    console.log('═══════════════════════════════════════════════════════════════');
-    console.log('📋 ECOSEM V.7 — REPORTE DE VERIFICACIÓN DE SISTEMA');
-    console.log('═══════════════════════════════════════════════════════════════');
-    console.log('');
-    
-    let todoCargado = true;
-    
-    // 1. Firebase
-    if (typeof firebase !== 'undefined' && window._firebaseOK) {
-      console.log('✅ Firebase cargado correctamente');
-      console.log('   → Firestore: ' + (typeof db !== 'undefined' ? 'ACTIVO' : 'ERROR'));
-      console.log('   → Auth: ' + (typeof auth !== 'undefined' ? 'ACTIVO' : 'ERROR'));
-    } else {
-      console.error('❌ Firebase NO cargado o con errores');
-      todoCargado = false;
-    }
-    
-    // 2. XLSX (Excel)
-    if (typeof XLSX !== 'undefined') {
-      console.log('✅ XLSX (Excel) cargado correctamente');
-    } else {
-      console.error('❌ XLSX (Excel) NO cargado');
-      todoCargado = false;
-    }
-    
-    // 3. Autenticación ECOSEM
-    if (typeof USUARIOS_ECOSEM !== 'undefined') {
-      console.log('✅ Sistema de autenticación cargado (' + Object.keys(USUARIOS_ECOSEM).length + ' usuarios)');
-    } else {
-      console.error('❌ Sistema de autenticación NO cargado');
-      todoCargado = false;
-    }
-    
-    // 4. Verificar funciones críticas
-    const funcionesCriticas = [
-      'guardarOT',
-      'abrirForm',
-      'cargarMisOTs',
-      'abrirHistorial',
-      'ECOSEM_PRINT_V2',
-      'printOTBlanco',
-      'exportarDashboardExcel'
-    ];
-    
-    let funcionesOK = 0;
-    let funcionesError = [];
-    
-    funcionesCriticas.forEach(function(fn) {
-      if (typeof window[fn] === 'function') {
-        funcionesOK++;
-      } else {
-        funcionesError.push(fn);
-      }
-    });
-    
-    if (funcionesError.length === 0) {
-      console.log('✅ Todas las funciones críticas cargadas (' + funcionesOK + '/' + funcionesCriticas.length + ')');
-    } else {
-      console.error('❌ Funciones faltantes: ' + funcionesError.join(', '));
-      todoCargado = false;
-    }
-    
-    // 5. Verificar elementos del DOM
-    const elementosCriticos = [
-      'login-screen',
-      'app-main',
-      'ov-form',
-      'ov-historial',
-      'ov-dashboard'
-    ];
-    
-    let elementosOK = 0;
-    let elementosError = [];
-    
-    elementosCriticos.forEach(function(id) {
-      if (document.getElementById(id)) {
-        elementosOK++;
-      } else {
-        elementosError.push(id);
-      }
-    });
-    
-    if (elementosError.length === 0) {
-      console.log('✅ Todos los elementos del DOM presentes (' + elementosOK + '/' + elementosCriticos.length + ')');
-    } else {
-      console.warn('⚠️  Elementos faltantes del DOM: ' + elementosError.join(', '));
-    }
-    
-    // 6. Service Worker
-    if ('serviceWorker' in navigator) {
-      console.log('✅ Service Worker compatible');
-    } else {
-      console.warn('⚠️  Service Worker no compatible en este navegador');
-    }
-    
-    console.log('');
-    console.log('═══════════════════════════════════════════════════════════════');
-    if (todoCargado) {
-      console.log('✅ SISTEMA ECOSEM V.7 COMPLETAMENTE CARGADO');
-    } else {
-      console.error('❌ SISTEMA CON ERRORES - Revisar logs arriba');
-    }
-    console.log('═══════════════════════════════════════════════════════════════');
-    console.log('');
-    
-    // Mostrar toast visual si hay errores
-    if (!todoCargado && typeof toast === 'function') {
-      toast('⚠️ Sistema cargado con errores. Revisar consola (F12)', '#FF3B30');
-    }
-  }, 2000); // Esperar 2 segundos para que todo se cargue
