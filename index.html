@@ -520,13 +520,13 @@
     /* ═══ SUPERVISOR ÁREA — TEMA BLANCO PARA ADULTOS ═══════════════════ */
     body.sv-area-mode {
       /* Fondo BLANCO */
-      --dark: #FFFFFF;
+      --dark: #75c9e2;
       --dark2: #F5F5F7;
-      --dark3: #E8E8EA;
-      --dark4: #D1D1D6;
+      --dark3: #40fd8f;
+      --dark4: #38ebf8;
 
       /* Bordes NEGROS visibles */
-      --bdr: #C7C7CC;
+      --bdr: #43ecc8;
       --bdr2: #8E8E93;
 
       /* Texto NEGRO */
@@ -2905,8 +2905,13 @@
     try {
       const snap = await db.collection('ordenes_trabajo')
         .where('mecanicoPrincipal', '==', S.nombre)
-        .orderBy('creadoEn', 'desc').limit(200).get();
-      const ots = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        .limit(200).get();
+      const ots = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => {
+          const ta = a.creadoEn?.toDate ? a.creadoEn.toDate().getTime() : (a.creadoEn || 0);
+          const tb = b.creadoEn?.toDate ? b.creadoEn.toDate().getTime() : (b.creadoEn || 0);
+          return tb - ta;
+        });
 
       const msTotal = $('ms-total');
       const msEjec = $('ms-ejec');
@@ -3460,7 +3465,7 @@
     if (ot && ot.trabajos && ot.trabajos.length) {
       window._trabajos = ot.trabajos.map(t => {
         let repuestos = [];
-        
+
         // Si tiene array de repuestos
         if (Array.isArray(t.repuestos)) {
           repuestos = t.repuestos.map(r => {
@@ -3484,12 +3489,12 @@
             unidad: t.unidad || ''
           });
         }
-        
+
         // Completar hasta 5 repuestos
         while (repuestos.length < 5) {
           repuestos.push({ nombre: '', cant: '', unidad: '' });
         }
-        
+
         return {
           desc: t.desc || t.descripcion || '',
           repuestos: repuestos
@@ -3542,22 +3547,22 @@
       'LLANTERÍA': ['Cortes por rocas', 'Separación de banda (calor)', 'Desgaste irregular', 'Pérdida de presión', 'Espárragos rotos/deformados'],
       'MOTOR': ['Pérdida de potencia', 'Humo denso', 'Gripado de pistón', 'Contaminación de aceite (agua/combustible)', 'Ruidos internos (golpeteo)'],
       'TRANSMISIÓN': ['Patinamiento de marchas', 'Recalentamiento de aceite', 'Rotura de crucetas', 'Vibración excesiva', 'Demora en cambios'],
-      'DIFERENCIAL': ['Zumbido/ruido metálico', 'Viruta en tapón magnético', 'Fuga en retenes de eje', 'Rotura de dientes de engranaje'],
+      'DIFERENCIAL': ['Zumbido/ruido metálico', 'corona ', 'arbol de transmision ', 'Viruta en tapón magnético', 'Fuga en retenes de eje', 'Rotura de dientes de engranaje'],
       'HIDRÁULICO': ['Cavitación (ruido en bomba)', 'Vástagos rayados', 'Descenso de tolva por gravedad', 'Reventón de mangueras', 'Lentitud hidráulica'],
       'DIRECCIÓN': ['Dureza en el volante', 'Juego excesivo (vaivén)', 'Respuesta tardía', 'Fugas en sellos de cilindros'],
       'FRENOS': ['Bloqueo de ruedas', 'Cristalización de fricciones', 'Presencia de aceite en líneas de aire', 'Pedal esponjoso/largo'],
       'SUSPENSIÓN': ['Amortiguadores en mal estado', 'Pérdida de nitrógeno/aceite', 'Hojas de muelle fracturadas', 'Soportes (pernos) sueltos o rotos'],
       'ELÉCTRICO': ['Sulfatación', 'scaneo ', 'cables en mal estado ', 'Cortocircuito en arnés', 'Lecturas erróneas en panel (check engine)', 'Luces inoperativas'],
-      'NEUMÁTICO': ['Agua en el sistema', 'Carga lenta de tanques', 'Fugas audibles en válvulas relé', 'Diafragmas de pulmón rotos', 'Secador de aire'],
+      'NEUMÁTICO': ['fuga de aire', 'Carga lenta de tanques', 'Fugas audibles en válvulas relé', 'Diafragmas de pulmón rotos', 'Secador de aire'],
       'ESTRUCTURAL': ['Fisuras en soldadura', 'Deformación por sobrecarga', 'Pernos de anclaje de cabina rotos', 'Corrosión profunda'],
-      'TOLVA': ['soldadura de base de bolsa', 'soldadura de implementos diversos','soldadura de base de llanta de repuesto','arenado de interior', 'parche de agujero', 'cambio o soldadura de base de piston neumatico', 'Deformación de compuerta', 'Mantenimiento general', 'engrase en los puntos', 'Abolladuras por impacto'],
+      'TOLVA': ['Desgaste abrasivo de planchas', 'Deformación de compuerta', 'Mantenimiento general', 'engrase en los puntos', 'Abolladuras por impacto'],
       'IMPLEMENTOS': ['Juego excesivo en el enganche', 'Falta de cierre de seguridad', 'Desgaste de bocinas', 'Falta de lubricación (engrase)'],
       'REFRIGERACIÓN': ['Recalentamiento del motor', 'Fugas de refrigerante', 'Aletas de radiador obstruidas', 'Ventilador inoperativo (falla de embrague)'],
-      'SOLDADURA': ['extraccion de bujes', 'extraccion de cruceta cardan','Falta de penetración', 'Porosidad en la unión', 'Fisuras térmicas'],
+      'SOLDADURA': ['soldadura de bases de bolsas', 'extraccion de crucetas de cardan', 'extraccion de buje', 'soldadura de implementacion', 'soldadura de chasis', 'soldadura de base de llantas', 'Fisuras térmicas'],
       'CABINA': ['Fallas en controles (joysticks)', 'Aire acondicionado sin enfriamiento', 'Cristales rajados', 'Insonorización deficiente'],
     };
 
-    const CAUSAS = ['Desgaste normal', 'Falta de mantenimiento', 'Mal uso del operador', 'Daño por impacto', 'Falla de fabricación', 'Material defectuoso', 'Sobrecarga', 'Fatiga del material', 'Falla eléctrica', 'Contaminación', 'Otro'];
+    const CAUSAS = ['Desgaste normal', 'desgaste por uso diario', 'Falta de mantenimiento', 'Mal uso del operador', 'Daño por impacto', 'Falla de fabricación', 'Material defectuoso', 'Sobrecarga', 'Fatiga del material', 'Falla eléctrica', 'Contaminación', 'Otro'];
 
     $('ov-form-body').innerHTML = `
   <div style="max-width:640px;margin:0 auto;padding-bottom:2rem;">
@@ -3828,7 +3833,7 @@
     'ELÉCTRICO': ['Sulfatación', 'Falta de carga', 'Cortocircuito en arnés', 'Lecturas erróneas en panel (check engine)', 'Luces inoperativas'],
     'NEUMÁTICO': ['fuga de aire en las cañerias', 'Carga lenta de tanques', 'Fugas audibles en válvulas relé', 'Diafragmas de pulmón rotos', 'Secador de aire'],
     'ESTRUCTURAL': ['Fisuras en soldadura', 'Deformación por sobrecarga', 'Pernos de anclaje de cabina rotos', 'Corrosión profunda'],
-    'TOLVA': ['Desgaste abrasivo de planchas', 'mantenimiento general ', 'engrase engrase general en los puntos', 'Deformación de compuerta', 'Trabas en el mecanismo de apertura', 'Abolladuras por impacto'],
+    'TOLVA': ['Desgaste abrasivo de planchas', 'mantenimiento general ', 'engrase general en los puntos', 'Deformación de compuerta', 'Trabas en el mecanismo de apertura', 'Abolladuras por impacto'],
     'IMPLEMENTOS': ['Juego excesivo en el enganche', 'Falta de cierre de seguridad', 'Desgaste de bocinas', 'Falta de lubricación (engrase)'],
     'REFRIGERACIÓN': ['Recalentamiento del motor', 'Fugas de refrigerante', 'Aletas de radiador obstruidas', 'Ventilador inoperativo (falla de embrague)'],
     'SOLDADURA': ['Desprendimiento de cordón', 'Falta de penetración', 'Porosidad en la unión', 'Fisuras térmicas'],
@@ -4795,7 +4800,13 @@
         'Avería', 'Causa', 'Operador/Conductor', 'Parada',
         'Mecánico 1', 'Mecánico 2', 'Mecánico 3', 'Mecánico 4', 'Mecánico 5',
         'Fecha Inicio', 'Hora Inicio', 'Fecha Fin', 'Hora Fin',
-        'Trabajos Realizados', 'Observaciones', 'Registrado Por'
+        'Trabajos Realizados',
+        'Rep1 Nombre', 'Rep1 Cant', 'Rep1 Unid',
+        'Rep2 Nombre', 'Rep2 Cant', 'Rep2 Unid',
+        'Rep3 Nombre', 'Rep3 Cant', 'Rep3 Unid',
+        'Rep4 Nombre', 'Rep4 Cant', 'Rep4 Unid',
+        'Rep5 Nombre', 'Rep5 Cant', 'Rep5 Unid',
+        'Observaciones', 'Registrado Por'
       ];
 
       const dataRows = ots.map((o, idx) => {
@@ -4818,15 +4829,24 @@
         const fechaFin = o.fechaFin || '';
         const horaFin = o.horaFin || '';
 
-        // Trabajos realizados como texto
+        // Trabajos realizados como texto (descripción)
         const trabajos = (o.trabajos || []).map(t =>
-          `${t.desc || ''}${t.cant ? ' (Cant: ' + t.cant + ')' : ''}${t.repuesto ? ' [Rep: ' + t.repuesto + ']' : ''}`
-        ).join(' | ');
+          (t.desc || t.descripcion || t.trabajo || '')
+        ).filter(Boolean).join(' | ');
+
+        // Repuestos en columnas separadas (hasta 5)
+        const reps = [];
+        (o.trabajos || []).forEach(t => {
+          const lista = Array.isArray(t.repuestos) ? t.repuestos : (t.repuesto ? [{ nombre: t.repuesto, cant: t.cant || '', unidad: t.unidad || '' }] : []);
+          lista.forEach(r => { if (r && r.nombre) reps.push(r); });
+        });
+        while (reps.length < 5) reps.push({ nombre: '', cant: '', unidad: '' });
+        const r1 = reps[0], r2 = reps[1], r3 = reps[2], r4 = reps[3], r5 = reps[4];
 
         return [
           idx + 1,
           o.codigo || '',
-          fechaReg,
+          o.fechaRegistro || fechaReg,
           horaReg,
           o.tipoOT || o.tipo || '',
           o.subtipoMP || '',
@@ -4849,9 +4869,13 @@
           fechaFin,
           horaFin,
           trabajos,
+          r1.nombre, r1.cant, r1.unidad || '',
+          r2.nombre, r2.cant, r2.unidad || '',
+          r3.nombre, r3.cant, r3.unidad || '',
+          r4.nombre, r4.cant, r4.unidad || '',
+          r5.nombre, r5.cant, r5.unidad || '',
           o.observaciones || '',
-          o.registradoPor || ''
-        ];
+          o.registradoPor || ''];
       });
 
       const wsData = XLSX.utils.aoa_to_sheet([dataHdr, ...dataRows]);
@@ -4861,9 +4885,11 @@
         12, 12, 22,
         8, 10, 16, 16,
         20, 20, 28, 10,
-        30, 30, 30, 15, 15,
+        24, 24, 24, 15, 15,
         13, 10, 13, 10,
-        40, 30, 20
+        35,
+        20, 8, 8, 20, 8, 8, 20, 8, 8, 20, 8, 8, 20, 8, 8,
+        30, 20
       ]);
 
       // ════════════════════════════════════════════════════
@@ -5064,6 +5090,10 @@
 
   // ── FUNCIONES DE IMPRESIÓN DE OT (mismo scope) ──
   function ECOSEM_RENDER_OT(otData) {
+
+    // Obtener logo dinámicamente desde el elemento oculto (base64 completo)
+    const _logoEl = document.getElementById('img_logo_src');
+    const _logoSrc = (_logoEl && _logoEl.src && _logoEl.src.startsWith('data:')) ? _logoEl.src : '';
 
     const ventana = window.open('', '_blank');
 
@@ -5386,7 +5416,7 @@
   <!-- ═══ ENCABEZADO ═══ -->
   <div class="header">
     <div class="header-logo">
-      <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCACDAMsDASIAAhEBAxEB/8QAHAABAAIDAQEBAAAAAAAAAAAAAAcIBAUGAwIB/8QASRAAAQMDBAAEBAQBBQoPAAAAAQIDBAAFEQYHEiEIEzFBFCJRYRUycYEjFjNCkaEJFyRDUrGzweHwGCc0ODlkZXN0dXaytMPR/8QAGwEBAAIDAQEAAAAAAAAAAAAAAAUGAwQHAgH/xAAsEQACAQMDAwMEAgMBAAAAAAAAAQIDBBEFITESQVEGYXETIoGRseEHFBUy/9oADAMBAAIRAxEAPwCqVKUoBSlKAUpSgFKUoBSlddofTL+o7giOyUp9VKKjhKUjGST7D1NAc6lt1SCpKFFPuQOhXvGiPPuBASQT6D3P+/VTezaNF6djiPCj
+      ${_logoSrc ? '<img src="' + _logoSrc + '" style="width:45px;height:45px;object-fit:contain;" alt="ECOSEM">' : ''}
       <div style="font-size:6.5pt; font-weight:700; margin-top:1px;">ECOSEM HUARAUCACA</div>
     </div>
     <div class="header-center">
@@ -5866,7 +5896,6 @@
     'alfonso': { password: 'mec2025', rol: 'mecanico', nombre: 'ALFONSO UGARTE JAVIER' },
     'alvarado': { password: 'mec2025', rol: 'mecanico', nombre: 'ALVARADO SOTO WILLIAM' },
     'brandon': { password: 'mec2025', rol: 'mecanico', nombre: 'BRANDON ARCE CASIMIRO' },
-    'brayan': { password: 'mec2025', rol: 'mecanico', nombre: 'BRAYAN MARLON CAJACURI ROJAS' },
     'callupe': { password: 'mec2025', rol: 'mecanico', nombre: 'CALLUPE MATIAS JOSMEL' },
     'campos': { password: 'mec2025', rol: 'mecanico', nombre: 'CAMPOS ALVARADO JHONATAN FELIX' },
     'caqui': { password: 'mec2025', rol: 'mecanico', nombre: 'CAQUI TORRES FRAN' },
