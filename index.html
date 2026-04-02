@@ -2903,10 +2903,19 @@
   async function cargarMisOTs() {
     const el = $('mis-ots'); if (!el) return;
     try {
-      const snap = await db.collection('ordenes_trabajo')
+      // Buscar como mecánico principal
+      const snapPrincipal = await db.collection('ordenes_trabajo')
         .where('mecanicoPrincipal', '==', S.nombre)
         .limit(200).get();
-      const ots = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      // Buscar como mecánico en el array mecanicos[]
+      const snapArray = await db.collection('ordenes_trabajo')
+        .where('mecanicos', 'array-contains', S.nombre)
+        .limit(200).get();
+      // Combinar sin duplicados
+      const mapaOTs = {};
+      snapPrincipal.docs.forEach(d => { mapaOTs[d.id] = { id: d.id, ...d.data() }; });
+      snapArray.docs.forEach(d => { mapaOTs[d.id] = { id: d.id, ...d.data() }; });
+      const ots = Object.values(mapaOTs)
         .sort((a, b) => {
           const ta = a.creadoEn?.toDate ? a.creadoEn.toDate().getTime() : (a.creadoEn || 0);
           const tb = b.creadoEn?.toDate ? b.creadoEn.toDate().getTime() : (b.creadoEn || 0);
@@ -3426,6 +3435,8 @@
     const fe = $('f-equipo'); if (fe) fe.value = e.desc;
     const fp = $('f-placa'); if (fp) fp.value = e.placa;
     const fu = $('f-unidad'); if (fu) fu.value = e.cod;
+    const fm = $('f-marca'); if (fm) fm.value = e.marca || '';
+    const fmo = $('f-modelo'); if (fmo) fmo.value = e.modelo || '';
     const fl = $('f-linea');
     const fls = $('f-linea-show');
     if (fl) {
@@ -3544,13 +3555,13 @@
 
 
     const AVERIAS_MAP = {
-      'LLANTERÍA': ['Cortes por rocas', 'Separación de banda (calor)', 'Desgaste irregular', 'Pérdida de presión', 'Espárragos rotos/deformados'],
-      'MOTOR': ['Pérdida de potencia', 'Humo denso', 'Gripado de pistón', 'Contaminación de aceite (agua/combustible)', 'Ruidos internos (golpeteo)'],
+      'LLANTERÍA': ['Cortes por rocas', 'Cambio de neumaticos', 'Separación de banda (calor)', 'Desgaste irregular', 'Pérdida de presión', 'Espárragos rotos/deformados'],
+      'MOTOR': ['Pérdida de potencia', 'Humo denso', 'arrancador', 'turbo', 'freno de motor','Gripado de pistón', 'Contaminación de aceite (agua/combustible)', 'Ruidos internos (golpeteo)'],
       'TRANSMISIÓN': ['Patinamiento de marchas', 'Recalentamiento de aceite', 'Rotura de crucetas', 'Vibración excesiva', 'Demora en cambios'],
       'DIFERENCIAL': ['Zumbido/ruido metálico', 'corona ', 'arbol de transmision ', 'Viruta en tapón magnético', 'Fuga en retenes de eje', 'Rotura de dientes de engranaje'],
-      'HIDRÁULICO': ['Cavitación (ruido en bomba)', 'Vástagos rayados', 'Descenso de tolva por gravedad', 'Reventón de mangueras', 'Lentitud hidráulica'],
+      'HIDRÁULICO': ['Cavitación (ruido en bomba)', 'mangueras rotas','fuga de hidrlina','Vástagos rayados', 'Descenso de tolva por gravedad', 'Reventón de mangueras', 'Lentitud hidráulica'],
       'DIRECCIÓN': ['Dureza en el volante', 'Juego excesivo (vaivén)', 'Respuesta tardía', 'Fugas en sellos de cilindros'],
-      'FRENOS': ['Bloqueo de ruedas', 'Cristalización de fricciones', 'Presencia de aceite en líneas de aire', 'Pedal esponjoso/largo'],
+      'FRENOS': ['pastillas o zapatas desgastadas', 'falla de comprensora de aire','Cristalización de fricciones','Desajuste de frenos', 'Presencia de aceite en líneas de aire', 'Pedal esponjoso/largo'],
       'SUSPENSIÓN': ['Amortiguadores en mal estado', 'Pérdida de nitrógeno/aceite', 'Hojas de muelle fracturadas', 'Soportes (pernos) sueltos o rotos'],
       'ELÉCTRICO': ['Sulfatación', 'scaneo ', 'cables en mal estado ', 'Cortocircuito en arnés', 'Lecturas erróneas en panel (check engine)', 'Luces inoperativas'],
       'NEUMÁTICO': ['fuga de aire', 'Carga lenta de tanques', 'Fugas audibles en válvulas relé', 'Diafragmas de pulmón rotos', 'Secador de aire'],
@@ -3600,6 +3611,8 @@
             <div class="field"><label>Línea</label><input id="f-linea-show" type="text" value="${v('linea')}" style="background:var(--dark4);" readonly></div>
           </div>
           <input type="hidden" id="f-linea" value="${v('linea')}">
+          <input type="hidden" id="f-marca" value="${v('marca') || ''}">
+          <input type="hidden" id="f-modelo" value="${v('modelo') || ''}">
         </div>
 
         <div class="field-grid">
@@ -3823,7 +3836,7 @@
   // ── Avería cascade ──
   const AVERIAS_MAP_DATA = {
     'LLANTERÍA': ['Cortes por rocas', 'Separación de banda (calor)', 'Desgaste irregular', 'Pérdida de presión', 'Espárragos rotos/deformados'],
-    'MOTOR': ['Pérdida de potencia', 'Humo denso', 'Gripado de pistón', 'Contaminación de aceite (agua/combustible)', 'Ruidos internos (golpeteo)'],
+    'MOTOR': ['Pérdida de potencia', 'Humo denso', 'turbo','freno de motor','Gripado de pistón', 'Contaminación de aceite (agua/combustible)', 'Ruidos internos (golpeteo)'],
     'TRANSMISIÓN': ['Patinamiento de marchas', 'Recalentamiento de aceite', 'Rotura de crucetas', 'Vibración excesiva', 'Demora en cambios'],
     'DIFERENCIAL': ['Zumbido/ruido metálico', 'Viruta en tapón magnético', 'corona malogrado', 'cardan en mal estado', 'Fuga en retenes de eje', 'Rotura de dientes de engranaje'],
     'HIDRÁULICO': ['Cavitación (ruido en bomba)', 'Vástagos rayados', 'Descenso de tolva por gravedad', 'Reventón de mangueras', 'Lentitud hidráulica'],
@@ -3836,7 +3849,7 @@
     'TOLVA': ['Desgaste abrasivo de planchas', 'mantenimiento general ', 'engrase general en los puntos', 'Deformación de compuerta', 'Trabas en el mecanismo de apertura', 'Abolladuras por impacto'],
     'IMPLEMENTOS': ['Juego excesivo en el enganche', 'Falta de cierre de seguridad', 'Desgaste de bocinas', 'Falta de lubricación (engrase)'],
     'REFRIGERACIÓN': ['Recalentamiento del motor', 'Fugas de refrigerante', 'Aletas de radiador obstruidas', 'Ventilador inoperativo (falla de embrague)'],
-    'SOLDADURA': ['Desprendimiento de cordón', 'Falta de penetración', 'Porosidad en la unión', 'Fisuras térmicas'],
+    'SOLDADURA': ['soldadura de bases de bolsas', 'extraccion de crucetas de cardan', 'extraccion de buje', 'soldadura de implementacion','Desprendimiento de cordón', 'Falta de penetración', 'Porosidad en la unión', 'Fisuras térmicas'],
     'CABINA': ['Fallas en controles (joysticks)', 'Aire acondicionado sin enfriamiento', 'Cristales rajados', 'Insonorización deficiente'],
     'OTROS': ['otros'],
   };
@@ -4048,6 +4061,7 @@
     const datos = {
       tipoOT: tipo, subtipoMP: get('f-smp'), linea, equipo,
       unidad: get('f-unidad'), placa: get('f-placa'),
+      marca: get('f-marca'), modelo: get('f-modelo'),
       km: get('f-km', '0'), horas: get('f-hrs', '0'),
       sistema: sis, averia: av, componente: get('f-componente'),
       causa: get('f-causa'), objeto: get('f-objeto'),
@@ -4790,7 +4804,7 @@
       setColWidths(wsMecs, [38, 10, 12, 14, 12, 10, 10]);
 
       // ════════════════════════════════════════════════════
-      // HOJA 5 — BASE_DATOS (columnas separadas)
+      // HOJA 5 — BASE_DATOS (una fila por trabajo)
       // ════════════════════════════════════════════════════
       const dataHdr = [
         'N°', 'Código OT', 'Fecha Registro', 'Hora Registro',
@@ -4800,7 +4814,7 @@
         'Avería', 'Causa', 'Operador/Conductor', 'Parada',
         'Mecánico 1', 'Mecánico 2', 'Mecánico 3', 'Mecánico 4', 'Mecánico 5',
         'Fecha Inicio', 'Hora Inicio', 'Fecha Fin', 'Hora Fin',
-        'Trabajos Realizados',
+        'Ítem', 'Descripción del Trabajo',
         'Rep1 Nombre', 'Rep1 Cant', 'Rep1 Unid',
         'Rep2 Nombre', 'Rep2 Cant', 'Rep2 Unid',
         'Rep3 Nombre', 'Rep3 Cant', 'Rep3 Unid',
@@ -4809,7 +4823,9 @@
         'Observaciones', 'Registrado Por'
       ];
 
-      const dataRows = ots.map((o, idx) => {
+      const dataRows = [];
+      let rowNum = 1;
+      ots.forEach((o) => {
         // Fecha y hora del registro
         const tsReg = o.creadoEn;
         const fechaReg = tsReg ? fmtFechaSola(tsReg) : (o.fechaRegistro || '');
@@ -4817,34 +4833,17 @@
 
         // Mecánicos en columnas separadas
         const mecs = o.mecanicos && o.mecanicos.length ? o.mecanicos : (o.mecanico ? [o.mecanico] : []);
-        const mec1 = mecs[0] || '';
-        const mec2 = mecs[1] || '';
-        const mec3 = mecs[2] || '';
-        const mec4 = mecs[3] || '';
-        const mec5 = mecs[4] || '';
+        const mec1 = mecs[0] || '', mec2 = mecs[1] || '', mec3 = mecs[2] || '', mec4 = mecs[3] || '', mec5 = mecs[4] || '';
 
-        // Fecha inicio y fin separadas
-        const fechaInicio = o.fechaInicio || '';
-        const horaInicio = o.horaInicio || '';
-        const fechaFin = o.fechaFin || '';
-        const horaFin = o.horaFin || '';
+        // Fechas inicio/fin
+        const fechaInicio = o.fechaInicio || o.fechaInicial || '';
+        const horaInicio = o.horaInicio || o.horaInicial || '';
+        const fechaFin = o.fechaFin || o.fechaFinal || '';
+        const horaFin = o.horaFin || o.horaFinal || '';
 
-        // Trabajos realizados como texto (descripción)
-        const trabajos = (o.trabajos || []).map(t =>
-          (t.desc || t.descripcion || t.trabajo || '')
-        ).filter(Boolean).join(' | ');
-
-        // Repuestos en columnas separadas (hasta 5)
-        const reps = [];
-        (o.trabajos || []).forEach(t => {
-          const lista = Array.isArray(t.repuestos) ? t.repuestos : (t.repuesto ? [{ nombre: t.repuesto, cant: t.cant || '', unidad: t.unidad || '' }] : []);
-          lista.forEach(r => { if (r && r.nombre) reps.push(r); });
-        });
-        while (reps.length < 5) reps.push({ nombre: '', cant: '', unidad: '' });
-        const r1 = reps[0], r2 = reps[1], r3 = reps[2], r4 = reps[3], r5 = reps[4];
-
-        return [
-          idx + 1,
+        // Datos comunes de la OT
+        const base = [
+          rowNum,
           o.codigo || '',
           o.fechaRegistro || fechaReg,
           horaReg,
@@ -4864,18 +4863,44 @@
           o.operador || '',
           o.parada || '',
           mec1, mec2, mec3, mec4, mec5,
-          fechaInicio,
-          horaInicio,
-          fechaFin,
-          horaFin,
-          trabajos,
-          r1.nombre, r1.cant, r1.unidad || '',
-          r2.nombre, r2.cant, r2.unidad || '',
-          r3.nombre, r3.cant, r3.unidad || '',
-          r4.nombre, r4.cant, r4.unidad || '',
-          r5.nombre, r5.cant, r5.unidad || '',
-          o.observaciones || '',
-          o.registradoPor || ''];
+          fechaInicio, horaInicio, fechaFin, horaFin
+        ];
+
+        const trabajos = (o.trabajos || []).filter(t => (t.desc || t.descripcion || t.trabajo || '').trim());
+
+        if (trabajos.length === 0) {
+          // OT sin trabajos — igual aparece en el reporte
+          const reps = [{ nombre: '', cant: '', unidad: '' }, { nombre: '', cant: '', unidad: '' }, { nombre: '', cant: '', unidad: '' }, { nombre: '', cant: '', unidad: '' }, { nombre: '', cant: '', unidad: '' }];
+          dataRows.push([...base, 1, '',
+            reps[0].nombre, reps[0].cant, reps[0].unidad,
+            reps[1].nombre, reps[1].cant, reps[1].unidad,
+            reps[2].nombre, reps[2].cant, reps[2].unidad,
+            reps[3].nombre, reps[3].cant, reps[3].unidad,
+            reps[4].nombre, reps[4].cant, reps[4].unidad,
+            o.observaciones || '', o.registradoPor || '']);
+        } else {
+          trabajos.forEach((t, ti) => {
+            // Repuestos de ESTE trabajo en columnas separadas
+            let reps = Array.isArray(t.repuestos)
+              ? t.repuestos.map(r => ({ nombre: r.nombre || r.repuesto || '', cant: r.cant || '', unidad: r.unidad || '' }))
+              : (t.repuesto ? [{ nombre: t.repuesto, cant: t.cant || '', unidad: t.unidad || '' }] : []);
+            while (reps.length < 5) reps.push({ nombre: '', cant: '', unidad: '' });
+            const desc = t.desc || t.descripcion || t.trabajo || '';
+            dataRows.push([
+              ...base,
+              ti + 1,
+              desc,
+              reps[0].nombre, reps[0].cant, reps[0].unidad,
+              reps[1].nombre, reps[1].cant, reps[1].unidad,
+              reps[2].nombre, reps[2].cant, reps[2].unidad,
+              reps[3].nombre, reps[3].cant, reps[3].unidad,
+              reps[4].nombre, reps[4].cant, reps[4].unidad,
+              ti === 0 ? (o.observaciones || '') : '',
+              ti === 0 ? (o.registradoPor || '') : ''
+            ]);
+          });
+        }
+        rowNum++;
       });
 
       const wsData = XLSX.utils.aoa_to_sheet([dataHdr, ...dataRows]);
@@ -4887,8 +4912,8 @@
         20, 20, 28, 10,
         24, 24, 24, 15, 15,
         13, 10, 13, 10,
-        35,
-        20, 8, 8, 20, 8, 8, 20, 8, 8, 20, 8, 8, 20, 8, 8,
+        6, 38,
+        22, 8, 8, 22, 8, 8, 22, 8, 8, 22, 8, 8, 22, 8, 8,
         30, 20
       ]);
 
@@ -5154,26 +5179,27 @@
     /* ── ENCABEZADO ── */
     .header {
       display: grid;
-      grid-template-columns: 75px 1fr 145px;
+      grid-template-columns: 110px 1fr 145px;
       border: 2px solid #000;
       margin-bottom: 0;
     }
     .header-logo {
       border-right: 2px solid #000;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      padding: 4px;
+      padding: 4px 6px;
       font-size: 6pt;
       font-weight: bold;
       text-align: center;
-      gap: 2px;
+      gap: 4px;
     }
     .header-logo img {
-      width: 45px;
-      height: 45px;
+      width: 42px;
+      height: 42px;
       object-fit: contain;
+      flex-shrink: 0;
     }
     .header-center {
       border-right: 2px solid #000;
@@ -5440,18 +5466,22 @@
     <div class="section-header">I. DATOS DEL EQUIPO</div>
     <div class="section-body">
 
-      <div class="row row-3" style="margin-bottom:5px;">
+      <div class="row row-4" style="margin-bottom:5px;">
         <div class="field">
           <div class="field-label">Código / Unidad</div>
-          <div class="field-value">${otData.equipo || otData.codigo || ''}</div>
+          <div class="field-value">${otData.unidad || otData.codigo || ''}</div>
         </div>
         <div class="field">
           <div class="field-label">Placa</div>
           <div class="field-value">${otData.placa || ''}</div>
         </div>
         <div class="field">
-          <div class="field-label">Equipo / Descripción</div>
-          <div class="field-value">${otData.nombreEquipo || otData.descripcionEquipo || ''}</div>
+          <div class="field-label">Equipo</div>
+          <div class="field-value">${otData.equipo || ''}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Modelo</div>
+          <div class="field-value">${otData.modelo || ''}</div>
         </div>
       </div>
 
@@ -5461,14 +5491,10 @@
           <div class="field-value">${otData.marca || ''}</div>
         </div>
         <div class="field">
-          <div class="field-label">Modelo</div>
-          <div class="field-value">${otData.modelo || ''}</div>
-        </div>
-        <div class="field">
           <div class="field-label">Área / Proyecto</div>
           <div class="field-value">${otData.area || otData.proyecto || ''}</div>
         </div>
-        <div class="field" style="grid-column: span 1;">
+        <div class="field" style="grid-column: span 2;">
           <!-- Estado del Equipo -->
           <div class="field-label">Estado del Equipo</div>
           <div class="status-checks">
@@ -5819,6 +5845,22 @@
       trabajosArr = ot.trabajos;
     }
 
+    // BUSCAR MARCA Y MODELO EN DB_EQUIPOS SI NO EXISTEN EN LA OT
+    let marcaFinal = ot.marca || '';
+    let modeloFinal = ot.modelo || ot.subtipoMP || '';
+    
+    if ((!marcaFinal || !modeloFinal) && (ot.placa || ot.unidad)) {
+      const equipoDB = DB_EQUIPOS.find(e => 
+        e.placa === ot.placa || 
+        e.cod === ot.unidad || 
+        e.cod === (ot.equipo || '').split(' ')[0]
+      );
+      if (equipoDB) {
+        if (!marcaFinal) marcaFinal = equipoDB.marca || '';
+        if (!modeloFinal) modeloFinal = equipoDB.modelo || '';
+      }
+    }
+
     // Armar objeto para imprimir con los campos EXACTOS de Firebase
     const otData = {
       codigoCompleto: ot.codigo || id,
@@ -5827,8 +5869,8 @@
       placa: ot.placa || '',
       unidad: ot.unidad || '',
       linea: ot.linea || '',
-      marca: ot.marca || '',
-      modelo: ot.modelo || ot.subtipoMP || '',
+      marca: marcaFinal,
+      modelo: modeloFinal,
       area: ot.linea || ot.area || '',
       tipo: ot.tipoOT || ot.tipo || '',
       estado: ot.estado || '',
